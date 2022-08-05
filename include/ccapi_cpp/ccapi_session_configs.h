@@ -33,6 +33,10 @@ class SessionConfigs CCAPI_FINAL {
  private:
 #endif
   void updateExchange() {
+    std::map<std::string, std::string> fieldWebsocketChannelMapOkcoin = {
+        {CCAPI_TRADE, CCAPI_WEBSOCKET_COINBASE_CHANNEL_MATCH},
+        {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_OKCOIN_CHANNEL_DEPTH},
+    };
     std::map<std::string, std::string> fieldWebsocketChannelMapCoinbase = {
         {CCAPI_TRADE, CCAPI_WEBSOCKET_COINBASE_CHANNEL_MATCH},
         {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_COINBASE_CHANNEL_LEVEL2},
@@ -139,6 +143,9 @@ class SessionConfigs CCAPI_FINAL {
         {CCAPI_TRADE, CCAPI_WEBSOCKET_ASCENDEX_CHANNEL_TRADES},
         {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_ASCENDEX_CHANNEL_DEPTH},
     };
+    for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapOkcoin) {
+      this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_OKCOIN].push_back(fieldWebsocketChannel.first);
+    }
     for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapCoinbase) {
       this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_COINBASE].push_back(fieldWebsocketChannel.first);
     }
@@ -222,6 +229,7 @@ class SessionConfigs CCAPI_FINAL {
     }
     CCAPI_LOGGER_TRACE("this->exchangeFieldMap = " + toString(this->exchangeFieldMap));
     this->exchangeFieldWebsocketChannelMap = {
+        {CCAPI_EXCHANGE_NAME_OKCOIN, fieldWebsocketChannelMapOkcoin},
         {CCAPI_EXCHANGE_NAME_COINBASE, fieldWebsocketChannelMapCoinbase},
         {CCAPI_EXCHANGE_NAME_GEMINI, fieldWebsocketChannelMapGemini},
         {CCAPI_EXCHANGE_NAME_KRAKEN, fieldWebsocketChannelMapKraken},
@@ -250,6 +258,7 @@ class SessionConfigs CCAPI_FINAL {
         {CCAPI_EXCHANGE_NAME_ASCENDEX, fieldWebsocketChannelMapAscendex},
     };
     this->urlWebsocketBase = {
+        {CCAPI_EXCHANGE_NAME_OKCOIN, CCAPI_OKCOIN_URL_WS_BASE},
         {CCAPI_EXCHANGE_NAME_COINBASE, CCAPI_COINBASE_URL_WS_BASE},
         {CCAPI_EXCHANGE_NAME_GEMINI, CCAPI_GEMINI_URL_WS_BASE},
         {CCAPI_EXCHANGE_NAME_KRAKEN, CCAPI_KRAKEN_URL_WS_BASE},
@@ -284,6 +293,7 @@ class SessionConfigs CCAPI_FINAL {
   }
   void updateExchangeRest() {
     this->urlRestBase = {
+        {CCAPI_EXCHANGE_NAME_OKCOIN, CCAPI_OKCOIN_URL_REST_BASE},
         {CCAPI_EXCHANGE_NAME_COINBASE, CCAPI_COINBASE_URL_REST_BASE},
         {CCAPI_EXCHANGE_NAME_GEMINI, CCAPI_GEMINI_URL_REST_BASE},
         {CCAPI_EXCHANGE_NAME_KRAKEN, CCAPI_KRAKEN_URL_REST_BASE},

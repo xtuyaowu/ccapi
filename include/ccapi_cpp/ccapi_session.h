@@ -4,6 +4,9 @@
 
 // start: enable exchanges for market data
 #ifdef CCAPI_ENABLE_SERVICE_MARKET_DATA
+#ifdef CCAPI_ENABLE_EXCHANGE_OKCOIN
+#include "ccapi_cpp/service/ccapi_market_data_service_okcoin.h"
+#endif
 #ifdef CCAPI_ENABLE_EXCHANGE_COINBASE
 #include "ccapi_cpp/service/ccapi_market_data_service_coinbase.h"
 #endif
@@ -248,6 +251,10 @@ class Session {
     this->t = std::move(t);
     this->internalEventHandler = std::bind(&Session::onEvent, this, std::placeholders::_1, std::placeholders::_2);
 #ifdef CCAPI_ENABLE_SERVICE_MARKET_DATA
+#ifdef CCAPI_ENABLE_EXCHANGE_OKCOIN
+    this->serviceByServiceNameExchangeMap[CCAPI_MARKET_DATA][CCAPI_EXCHANGE_NAME_OKCOIN] =
+        std::make_shared<MarketDataServiceOkcoin>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
+#endif
 #ifdef CCAPI_ENABLE_EXCHANGE_COINBASE
     this->serviceByServiceNameExchangeMap[CCAPI_MARKET_DATA][CCAPI_EXCHANGE_NAME_COINBASE] =
         std::make_shared<MarketDataServiceCoinbase>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
