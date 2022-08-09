@@ -12,6 +12,7 @@ class MarketDataServiceOkcoin : public MarketDataService {
     this->exchangeName = CCAPI_EXCHANGE_NAME_OKCOIN;
     this->baseUrl = sessionConfigs.getUrlWebsocketBase().at(this->exchangeName);
     this->baseUrlRest = sessionConfigs.getUrlRestBase().at(this->exchangeName);
+    this->needDecompressWebsocketMessage = true;
     this->setHostRestFromUrlRest(this->baseUrlRest);
     try {
       this->tcpResolverResultsRest = this->resolver.resolve(this->hostRest, this->portRest);
