@@ -34,7 +34,7 @@ class SessionConfigs CCAPI_FINAL {
 #endif
   void updateExchange() {
     std::map<std::string, std::string> fieldWebsocketChannelMapOkcoin = {
-        {CCAPI_TRADE, CCAPI_WEBSOCKET_BINANCE_BASE_CHANNEL_TRADE},
+        {CCAPI_TRADE, CCAPI_WEBSOCKET_OKCOIN_CHANNEL_TRADE},
         {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_OKCOIN_CHANNEL_DEPTH},
     };
     std::map<std::string, std::string> fieldWebsocketChannelMapCoinbase = {

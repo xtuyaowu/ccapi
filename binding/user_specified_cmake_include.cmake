@@ -27,11 +27,11 @@ include_guard(DIRECTORY)
 # add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BINANCE_USDS_FUTURES)
 # add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BINANCE_COIN_FUTURES)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_HUOBI)
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_HUOBI_USDT_SWAP)
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_HUOBI)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_HUOBI_USDT_SWAP)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_OKEX)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_OKEX)
 #
 # add_compile_definitions(CCAPI_ENABLE_EXCHANGE_ERISX)
 #
