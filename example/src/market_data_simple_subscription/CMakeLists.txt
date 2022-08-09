@@ -1,8 +1,13 @@
 set(NAME market_data_simple_subscription)
 project(${NAME})
+find_package(ZLIB REQUIRED)
+
+link_libraries(libz.a)
 add_compile_definitions(CCAPI_ENABLE_SERVICE_MARKET_DATA)
 add_compile_definitions(CCAPI_ENABLE_EXCHANGE_COINBASE)
 add_compile_definitions(CCAPI_ENABLE_EXCHANGE_OKCOIN)
+#add_compile_definitions(CCAPI_ENABLE_EXCHANGE_HUOBI)
+
 add_compile_definitions(CCAPI_ENABLE_LOG_DEBUG)
 add_compile_definitions(CCAPI_ENABLE_LOG_TRACE)
 add_executable(${NAME} main.cpp)
