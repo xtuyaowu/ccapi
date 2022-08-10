@@ -4,6 +4,18 @@ include_guard(DIRECTORY)
 #
  add_compile_definitions(CCAPI_ENABLE_SERVICE_EXECUTION_MANAGEMENT)
 #
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_INDODAX)
+#
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_LIQUID)
+#
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_INDEPENDENTRESERVE)
+#
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_EXMO)
+#
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BLOCKCHAIN)
+#
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BITTREX)
+#
  add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BITSO)
 #
  add_compile_definitions(CCAPI_ENABLE_EXCHANGE_OKCOIN)
