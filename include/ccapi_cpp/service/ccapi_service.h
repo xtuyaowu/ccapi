@@ -958,9 +958,35 @@ class Service : public std::enable_shared_from_this<Service> {
       }
     } else if (opcode == websocketpp::frame::opcode::binary) {
 #if defined(CCAPI_ENABLE_SERVICE_MARKET_DATA) && (defined(CCAPI_ENABLE_EXCHANGE_HUOBI) || defined(CCAPI_ENABLE_EXCHANGE_HUOBI_USDT_SWAP) || \
-                                                  defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_OKEX) || \
-                                                  defined(CCAPI_ENABLE_EXCHANGE_OKCOIN) ) || \
+                                                  defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_OKEX) ) || \
     defined(CCAPI_ENABLE_SERVICE_EXECUTION_MANAGEMENT) && (defined(CCAPI_ENABLE_EXCHANGE_HUOBI_USDT_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP))
+      if (this->needDecompressWebsocketMessage) {
+        std::string decompressed;
+        const std::string& payload = msg->get_payload();
+        try {
+          ErrorCode ec = this->inflater.decompress(reinterpret_cast<const uint8_t*>(&payload[0]), payload.size(), decompressed);
+          if (ec) {
+            CCAPI_LOGGER_FATAL(ec.message());
+          }
+          CCAPI_LOGGER_DEBUG("decompressed = " + decompressed);
+          this->onTextMessage(hdl, decompressed, now);
+        } catch (const std::exception& e) {
+          std::stringstream ss;
+          ss << std::hex << std::setfill('0');
+          for (int i = 0; i < payload.size(); ++i) {
+            ss << std::setw(2) << static_cast<unsigned>(reinterpret_cast<const uint8_t*>(&payload[0])[i]);
+          }
+          CCAPI_LOGGER_ERROR("binaryMessage = " + ss.str());
+          this->onError(Event::Type::SUBSCRIPTION_STATUS, Message::Type::GENERIC_ERROR, e);
+        }
+        ErrorCode ec = this->inflater.inflate_reset();
+        if (ec) {
+          this->onError(Event::Type::SUBSCRIPTION_STATUS, Message::Type::GENERIC_ERROR, ec, "decompress");
+        }
+      }
+#endif
+
+#if defined(CCAPI_ENABLE_EXCHANGE_OKCOIN)
       if (this->needDecompressWebsocketMessage) {
         std::string decompressed;
         const std::string& payload = msg->get_payload();
@@ -988,6 +1014,38 @@ class Service : public std::enable_shared_from_this<Service> {
 #endif
     }
   }
+
+  int gzDecompress(const char *src, int srcLen, const char *dst, int &dstLen){
+    z_stream strm;
+    strm.zalloc=NULL;
+    strm.zfree=NULL;
+    strm.opaque=NULL;
+    strm.avail_in = srcLen;
+    strm.avail_out = dstLen;
+    strm.next_in = (Bytef *)src;
+    strm.next_out = (Bytef *)dst;
+    int err=-1, ret=-1;
+    err = inflateInit2(&strm, MAX_WBITS+16);
+    if (err == Z_OK){
+      err = inflate(&strm, Z_FINISH);
+      if (err == Z_STREAM_END){
+        dstLen = strm.total_out;
+        inflateEnd(&strm);
+        return dstLen;
+      }
+      else{
+        inflateEnd(&strm);
+        return err;
+      }
+    }
+    else{
+      inflateEnd(&strm);
+      return err;
+    }
+    inflateEnd(&strm);
+    return err;
+  }
+
   void onPong(wspp::connection_hdl hdl, std::string payload) {
     auto now = UtilTime::now();
     this->onPongByMethod(PingPongMethod::WEBSOCKET_PROTOCOL_LEVEL, hdl, payload, now);
