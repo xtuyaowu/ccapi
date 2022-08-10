@@ -33,6 +33,10 @@ class SessionConfigs CCAPI_FINAL {
  private:
 #endif
   void updateExchange() {
+    std::map<std::string, std::string> fieldWebsocketChannelMapBitso = {
+        {CCAPI_TRADE, CCAPI_WEBSOCKET_BITSO_CHANNEL_TRADE},
+        {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_BITSO_CHANNEL_DEPTH},
+    };
     std::map<std::string, std::string> fieldWebsocketChannelMapOkcoin = {
         {CCAPI_TRADE, CCAPI_WEBSOCKET_OKCOIN_CHANNEL_TRADE},
         {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_OKCOIN_CHANNEL_DEPTH},
@@ -143,6 +147,9 @@ class SessionConfigs CCAPI_FINAL {
         {CCAPI_TRADE, CCAPI_WEBSOCKET_ASCENDEX_CHANNEL_TRADES},
         {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_ASCENDEX_CHANNEL_DEPTH},
     };
+    for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapBitso) {
+      this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_BITSO].push_back(fieldWebsocketChannel.first);
+    }
     for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapOkcoin) {
       this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_OKCOIN].push_back(fieldWebsocketChannel.first);
     }
@@ -229,6 +236,7 @@ class SessionConfigs CCAPI_FINAL {
     }
     CCAPI_LOGGER_TRACE("this->exchangeFieldMap = " + toString(this->exchangeFieldMap));
     this->exchangeFieldWebsocketChannelMap = {
+        {CCAPI_EXCHANGE_NAME_BITSO, fieldWebsocketChannelMapBitso},
         {CCAPI_EXCHANGE_NAME_OKCOIN, fieldWebsocketChannelMapOkcoin},
         {CCAPI_EXCHANGE_NAME_COINBASE, fieldWebsocketChannelMapCoinbase},
         {CCAPI_EXCHANGE_NAME_GEMINI, fieldWebsocketChannelMapGemini},
@@ -258,6 +266,7 @@ class SessionConfigs CCAPI_FINAL {
         {CCAPI_EXCHANGE_NAME_ASCENDEX, fieldWebsocketChannelMapAscendex},
     };
     this->urlWebsocketBase = {
+        {CCAPI_EXCHANGE_NAME_BITSO, CCAPI_BITSO_URL_WS_BASE},
         {CCAPI_EXCHANGE_NAME_OKCOIN, CCAPI_OKCOIN_URL_WS_BASE},
         {CCAPI_EXCHANGE_NAME_COINBASE, CCAPI_COINBASE_URL_WS_BASE},
         {CCAPI_EXCHANGE_NAME_GEMINI, CCAPI_GEMINI_URL_WS_BASE},
@@ -293,6 +302,7 @@ class SessionConfigs CCAPI_FINAL {
   }
   void updateExchangeRest() {
     this->urlRestBase = {
+        {CCAPI_EXCHANGE_NAME_BITSO, CCAPI_BITSO_URL_REST_BASE},
         {CCAPI_EXCHANGE_NAME_OKCOIN, CCAPI_OKCOIN_URL_REST_BASE},
         {CCAPI_EXCHANGE_NAME_COINBASE, CCAPI_COINBASE_URL_REST_BASE},
         {CCAPI_EXCHANGE_NAME_GEMINI, CCAPI_GEMINI_URL_REST_BASE},

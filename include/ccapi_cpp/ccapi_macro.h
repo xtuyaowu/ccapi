@@ -45,6 +45,9 @@
 #endif
 #define CCAPI_MARKET_DEPTH_RETURN_UPDATE_DEFAULT "0"
 #define CCAPI_MARKET_DEPTH_RETURN_UPDATE_ENABLE "1"
+#ifndef CCAPI_EXCHANGE_NAME_BITSO
+#define CCAPI_EXCHANGE_NAME_BITSO "bitso"
+#endif
 #ifndef CCAPI_EXCHANGE_NAME_OKCOIN
 #define CCAPI_EXCHANGE_NAME_OKCOIN "okcoin"
 #endif
@@ -216,6 +219,8 @@
 #ifndef CCAPI_ORDER_PRICE_TIMES_QUANTITY_MIN
 #define CCAPI_ORDER_PRICE_TIMES_QUANTITY_MIN "PRICE_TIMES_QUANTITY_MIN"
 #endif
+#define CCAPI_WEBSOCKET_BITSO_CHANNEL_TRADE "trades"
+#define CCAPI_WEBSOCKET_BITSO_CHANNEL_DEPTH "orders"
 #define CCAPI_WEBSOCKET_OKCOIN_CHANNEL_TRADE "spot/trade"
 #define CCAPI_WEBSOCKET_OKCOIN_CHANNEL_DEPTH "spot/depth_l2_tbt"
 #define CCAPI_WEBSOCKET_COINBASE_CHANNEL_MATCH "matches"
@@ -478,6 +483,9 @@
 #endif
 
 // start: exchange REST urls
+#ifndef CCAPI_BITSO_URL_REST_BASE
+#define CCAPI_BITSO_URL_REST_BASE "https://api.bitso.com/v3"
+#endif
 #ifndef CCAPI_OKCOIN_URL_REST_BASE
 #define CCAPI_OKCOIN_URL_REST_BASE "https://www.okcoin.com/api"
 #endif
@@ -646,6 +654,9 @@
 // end: exchange REST urls
 
 // start: exchange WS urls
+#ifndef CCAPI_BITSO_URL_WS_BASE
+#define CCAPI_BITSO_URL_WS_BASE "wss://ws.bitso.com"
+#endif
 #ifndef CCAPI_OKCOIN_URL_WS_BASE
 #define CCAPI_OKCOIN_URL_WS_BASE "wss://real.okcoin.com:8443/ws/v3"
 #endif
