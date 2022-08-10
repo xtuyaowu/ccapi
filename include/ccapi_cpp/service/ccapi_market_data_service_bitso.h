@@ -48,7 +48,7 @@ class MarketDataServiceBitso : public MarketDataService {
         this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_SYMBOL_ID] = symbolId;
 
         document.AddMember("book", rj::Value(rj::StringRef(symbolId.c_str(), symbolId.length())).Move(), allocator);
-        document.AddMember("book", rj::Value(rj::StringRef(channelId.c_str(), channelId.length())).Move(), allocator);
+        document.AddMember("type", rj::Value(rj::StringRef(channelId.c_str(), channelId.length())).Move(), allocator);
 
         rj::StringBuffer stringBuffer;
         rj::Writer<rj::StringBuffer> writer(stringBuffer);
@@ -65,6 +65,7 @@ class MarketDataServiceBitso : public MarketDataService {
     document.Parse<rj::kParseNumbersAsStringsFlag>(textMessage.c_str());
     std::string type = document["type"].GetString();
     std::string book = document["book"].GetString();
+    auto now = UtilTime::now();
     if (type == "orders") {
       std::string channelId = type;
       std::string symbolId = book;
@@ -74,7 +75,7 @@ class MarketDataServiceBitso : public MarketDataService {
       marketDataMessage.type = MarketDataMessage::Type::MARKET_DATA_EVENTS_MARKET_DEPTH;
       marketDataMessage.recapType = MarketDataMessage::RecapType::SOLICITED;
       marketDataMessage.exchangeSubscriptionId = exchangeSubscriptionId;
-      // marketDataMessage.tp = UtilTime::parse(std::string(data["timestamp"].GetString()));
+      marketDataMessage.tp = now;
       for (const auto& x : data["bids"].GetArray()) {
         MarketDataMessage::TypeForDataPoint dataPoint;
         dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(x["r"].GetString())});
@@ -98,7 +99,7 @@ class MarketDataServiceBitso : public MarketDataService {
         marketDataMessage.recapType = MarketDataMessage::RecapType::NONE;
         std::string exchangeSubscriptionId = channelId + ":" + symbolId;
         marketDataMessage.exchangeSubscriptionId = exchangeSubscriptionId;
-        // marketDataMessage.tp = UtilTime::parse(std::string(x["timestamp"].GetString()));
+        marketDataMessage.tp = now;
         MarketDataMessage::TypeForDataPoint dataPoint;
         dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(std::string(x["r"].GetString()))});
         dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(std::string(x["a"].GetString()))});
