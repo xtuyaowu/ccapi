@@ -46,8 +46,15 @@ class MarketDataServiceBitso : public MarketDataService {
         std::string exchangeSubscriptionId = channelId + ":" + symbolId;
         this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_CHANNEL_ID] = channelId;
         this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_SYMBOL_ID] = symbolId;
-        document.AddMember("book", rj::Value(symbolId.c_str()).Move(), allocator);
-        document.AddMember("type", rj::Value(channelId.c_str()).Move(), allocator);
+//        rj::Value("subscribe");
+        rj::Value symbolIdValue;
+        symbolIdValue.SetString(rj::StringRef(symbolId.c_str(), symbolId.length()));
+        rj::Value channelIdValue;
+        channelIdValue.SetString(rj::StringRef(channelId.c_str(), symbolId.length()));
+
+        document.AddMember("book", symbolIdValue.Move(), allocator);
+        document.AddMember("type", channelIdValue.Move(), allocator);
+
         rj::StringBuffer stringBuffer;
         rj::Writer<rj::StringBuffer> writer(stringBuffer);
         document.Accept(writer);
