@@ -1015,36 +1015,36 @@ class Service : public std::enable_shared_from_this<Service> {
     }
   }
 
-  int gzDecompress(const char *src, int srcLen, const char *dst, int &dstLen){
-    z_stream strm;
-    strm.zalloc=NULL;
-    strm.zfree=NULL;
-    strm.opaque=NULL;
-    strm.avail_in = srcLen;
-    strm.avail_out = dstLen;
-    strm.next_in = (Bytef *)src;
-    strm.next_out = (Bytef *)dst;
-    int err=-1, ret=-1;
-    err = inflateInit2(&strm, MAX_WBITS+16);
-    if (err == Z_OK){
-      err = inflate(&strm, Z_FINISH);
-      if (err == Z_STREAM_END){
-        dstLen = strm.total_out;
-        inflateEnd(&strm);
-        return dstLen;
-      }
-      else{
-        inflateEnd(&strm);
-        return err;
-      }
-    }
-    else{
-      inflateEnd(&strm);
-      return err;
-    }
-    inflateEnd(&strm);
-    return err;
-  }
+//  int gzDecompress(const char *src, int srcLen, const char *dst, int &dstLen){
+//    z_stream strm;
+//    strm.zalloc=NULL;
+//    strm.zfree=NULL;
+//    strm.opaque=NULL;
+//    strm.avail_in = srcLen;
+//    strm.avail_out = dstLen;
+//    strm.next_in = (Bytef *)src;
+//    strm.next_out = (Bytef *)dst;
+//    int err=-1, ret=-1;
+//    err = inflateInit2(&strm, MAX_WBITS+16);
+//    if (err == Z_OK){
+//      err = inflate(&strm, Z_FINISH);
+//      if (err == Z_STREAM_END){
+//        dstLen = strm.total_out;
+//        inflateEnd(&strm);
+//        return dstLen;
+//      }
+//      else{
+//        inflateEnd(&strm);
+//        return err;
+//      }
+//    }
+//    else{
+//      inflateEnd(&strm);
+//      return err;
+//    }
+//    inflateEnd(&strm);
+//    return err;
+//  }
 
   void onPong(wspp::connection_hdl hdl, std::string payload) {
     auto now = UtilTime::now();
