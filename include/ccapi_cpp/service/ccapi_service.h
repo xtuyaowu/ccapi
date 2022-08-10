@@ -993,7 +993,7 @@ class Service : public std::enable_shared_from_this<Service> {
         try {
           // ErrorCode ec = this->inflater.decompress(reinterpret_cast<const uint8_t*>(&payload[0]), payload.size(), decompressed);
           int dstLen = 0;
-          int ec = this->gzCompress(payload.c_str(),
+          int ec = this->gzDecompress(payload.c_str(),
                                     payload.size(),
                                     buf, dstLen);
           std::string decompressed(buf);
