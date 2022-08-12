@@ -703,7 +703,7 @@
 
 // start: exchange WS urls
 #ifndef CCAPI_INDODAX_URL_WS_BASE
-#define CCAPI_INDODAX_URL_WS_BASE "wss://indodax.com/ws/"
+#define CCAPI_INDODAX_URL_WS_BASE "wss://ws.indodax.com/ws/"
 #endif
 #ifndef CCAPI_LIQUID_URL_WS_BASE
 #define CCAPI_LIQUID_URL_WS_BASE "wss://tap.liquid.com/app/LiquidTapClient/"

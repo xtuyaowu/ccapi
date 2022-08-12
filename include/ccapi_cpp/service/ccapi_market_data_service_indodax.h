@@ -2,6 +2,8 @@
 #define INCLUDE_CCAPI_CPP_SERVICE_CCAPI_MARKET_DATA_SERVICE_INDODAX_H_
 #ifdef CCAPI_ENABLE_SERVICE_MARKET_DATA
 #ifdef CCAPI_ENABLE_EXCHANGE_INDODAX
+#include <chrono>
+#include <thread>
 #include "ccapi_cpp/service/ccapi_market_data_service.h"
 namespace ccapi {
 class MarketDataServiceIndodax : public MarketDataService {
@@ -32,24 +34,26 @@ class MarketDataServiceIndodax : public MarketDataService {
                                  const std::map<std::string, std::string> optionMap) override {
     auto marketDepthRequested = std::stoi(optionMap.at(CCAPI_MARKET_DEPTH_MAX));
   }
-  void pingOnApplicationLevel(wspp::connection_hdl hdl, ErrorCode& ec) override { this->send(hdl, R"({ "op": "ping" })", wspp::frame::opcode::text, ec); }
+  void pingOnApplicationLevel(wspp::connection_hdl hdl, ErrorCode& ec) override {
+    // this->send(hdl, R"({ "op": "ping" })", wspp::frame::opcode::text, ec);
+  }
   std::vector<std::string> createSendStringList(const WsConnection& wsConnection) override {
     std::vector<std::string> sendStringList;
     for (const auto& subscriptionListByChannelIdSymbolId : this->subscriptionListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id)) {
       auto channelId = subscriptionListByChannelIdSymbolId.first;
       for (const auto& subscriptionListBySymbolId : subscriptionListByChannelIdSymbolId.second) {
+        std::string symbolId = subscriptionListBySymbolId.first;
+        std::string exchangeSubscriptionId = symbolId + "." + channelId;
+        this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_CHANNEL_ID] = channelId;
+        this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_SYMBOL_ID] = symbolId;
         rj::Document document;
         document.SetObject();
         rj::Document::AllocatorType& allocator = document.GetAllocator();
-        document.AddMember("action", rj::Value("subscribe").Move(), allocator);
-        std::string symbolId = subscriptionListBySymbolId.first;
-        std::string exchangeSubscriptionId = channelId + ":" + symbolId;
-        this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_CHANNEL_ID] = channelId;
-        this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_SYMBOL_ID] = symbolId;
-
-        document.AddMember("book", rj::Value(rj::StringRef(symbolId.c_str(), symbolId.length())).Move(), allocator);
-        document.AddMember("type", rj::Value(rj::StringRef(channelId.c_str(), channelId.length())).Move(), allocator);
-
+        document.AddMember("id", 1, allocator);
+        document.AddMember("method", 1, allocator);
+        rapidjson::Value params(rapidjson::kObjectType);
+        params.AddMember("channel",rj::Value(exchangeSubscriptionId.c_str(), allocator).Move(), allocator);
+        document.AddMember("params", params, allocator);
         rj::StringBuffer stringBuffer;
         rj::Writer<rj::StringBuffer> writer(stringBuffer);
         document.Accept(writer);
@@ -59,94 +63,150 @@ class MarketDataServiceIndodax : public MarketDataService {
     }
     return sendStringList;
   }
+
+  void subscribeToExchange(const WsConnection& wsConnection) override{
+    CCAPI_LOGGER_INFO("exchange is " + this->exchangeName);
+    std::vector<std::string> sendStringList;
+    if (this->correlationIdByConnectionIdMap.find(wsConnection.id) == this->correlationIdByConnectionIdMap.end()) {
+      sendStringList = this->createSendStringList(wsConnection);
+    } else {
+      auto subscription = wsConnection.subscriptionList.at(0);
+      sendStringList = std::vector<std::string>(1, subscription.getRawOptions());
+    }
+    ErrorCode ec;
+    this->send(wsConnection.hdl, "{\"params\":{\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaW5mbyI6eyJuYW1lIjoiUHVibGljIn19.VJAHTrrfwxceSITpuPBl75LVM5bgojKGiUTOwCZxw-k\",\"name\":\"js\"},\"id\":1}", wspp::frame::opcode::text, ec);
+    if (ec) {
+      this->onError(Event::Type::SUBSCRIPTION_STATUS, Message::Type::SUBSCRIPTION_FAILURE, ec, "subscribe");
+    }
+  }
+
+  void _subscribeToExchange(const WsConnection& wsConnection) {
+    CCAPI_LOGGER_INFO("exchange is " + this->exchangeName);
+    std::vector<std::string> sendStringList;
+    if (this->correlationIdByConnectionIdMap.find(wsConnection.id) == this->correlationIdByConnectionIdMap.end()) {
+      sendStringList = this->createSendStringList(wsConnection);
+    } else {
+      auto subscription = wsConnection.subscriptionList.at(0);
+      sendStringList = std::vector<std::string>(1, subscription.getRawOptions());
+    }
+    for (const auto& sendString : sendStringList) {
+      CCAPI_LOGGER_INFO("sendString = " + sendString);
+      ErrorCode ec;
+      this->send(wsConnection.hdl, sendString, wspp::frame::opcode::text, ec);
+      if (ec) {
+        this->onError(Event::Type::SUBSCRIPTION_STATUS, Message::Type::SUBSCRIPTION_FAILURE, ec, "subscribe");
+      }
+    }
+  }
+
   void processTextMessage(WsConnection& wsConnection, wspp::connection_hdl hdl, const std::string& textMessage, const TimePoint& timeReceived, Event& event,
                           std::vector<MarketDataMessage>& marketDataMessageList) override {
     rj::Document document;
     document.Parse<rj::kParseNumbersAsStringsFlag>(textMessage.c_str());
-    std::string type = document["type"].GetString();
-    std::string book = document["book"].GetString();
-    auto now = UtilTime::now();
-    if (type == "orders") {
-      std::string channelId = type;
-      std::string symbolId = book;
-      std::string exchangeSubscriptionId = channelId + ":" + symbolId;
-      const rj::Value& data = document["payload"];
-      MarketDataMessage marketDataMessage;
-      marketDataMessage.type = MarketDataMessage::Type::MARKET_DATA_EVENTS_MARKET_DEPTH;
-      marketDataMessage.recapType = MarketDataMessage::RecapType::SOLICITED;
-      marketDataMessage.exchangeSubscriptionId = exchangeSubscriptionId;
-      marketDataMessage.tp = now;
-      for (const auto& x : data["bids"].GetArray()) {
-        MarketDataMessage::TypeForDataPoint dataPoint;
-        dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(x["r"].GetString())});
-        dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(x["a"].GetString())});
-        marketDataMessage.data[MarketDataMessage::DataType::BID].emplace_back(std::move(dataPoint));
+
+    std::string error_code = "";
+    std::string error_message = "";
+    if (document.HasMember("error")) {
+      // "{\"id\":1,\"error\":{\"code\":101,\"message\":\"unauthorized\"}}\n"
+      const rj::Value& error_object = document["error"];
+      error_code = error_object["code"].GetString();;
+      error_message = error_object["message"].GetString();
+      CCAPI_LOGGER_FATAL("indodax error: " + error_code + " code is: "+ error_message);
+    } else {
+      std::string channel = "";
+      std::string channelId = "";
+      std::string symbolId = "";
+      const rj::Value& result = document["result"];
+      if (!result.ObjectEmpty()) {
+        if (result.HasMember("channel")) {
+          channel = result["channel"].GetString();
+          auto pos = channel.find_last_of(".");
+          symbolId = channel.substr(0, pos);
+          channelId = channel.substr(pos + 1);
+        } else if (result.HasMember("client")) { // auth response
+          _subscribeToExchange(wsConnection);
+        }
       }
-      for (const auto& x : data["asks"].GetArray()) {
-        MarketDataMessage::TypeForDataPoint dataPoint;
-        dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(x["r"].GetString())});
-        dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(x["a"].GetString())});
-        marketDataMessage.data[MarketDataMessage::DataType::ASK].emplace_back(std::move(dataPoint));
-      }
-      marketDataMessageList.emplace_back(std::move(marketDataMessage));
-    } else if (type == "trades") {
-      std::string channelId = type;
-      std::string symbolId = book;
-      const rj::Value& data = document["payload"];
-      for (const auto& x : data.GetArray()) {
+      auto now = UtilTime::now();
+      if (channelId == "depth") {
+        const rj::Value& data_up = result["data"];
+        const rj::Value& data = data_up["data"];
+        MarketDataMessage marketDataMessage;
+        marketDataMessage.type = MarketDataMessage::Type::MARKET_DATA_EVENTS_MARKET_DEPTH;
+        marketDataMessage.recapType = MarketDataMessage::RecapType::SOLICITED;
+        marketDataMessage.exchangeSubscriptionId = channel;
+        marketDataMessage.tp = now;
+        for (const auto& x : data["bid"].GetArray()) {
+          MarketDataMessage::TypeForDataPoint dataPoint;
+          dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(x["price"].GetString())});
+          dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(x["order"].GetString())});
+          marketDataMessage.data[MarketDataMessage::DataType::BID].emplace_back(std::move(dataPoint));
+        }
+        for (const auto& x : data["ask"].GetArray()) {
+          MarketDataMessage::TypeForDataPoint dataPoint;
+          dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(x["price"].GetString())});
+          dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(x["order"].GetString())});
+          marketDataMessage.data[MarketDataMessage::DataType::ASK].emplace_back(std::move(dataPoint));
+        }
+        marketDataMessageList.emplace_back(std::move(marketDataMessage));
+      } else if (channelId == "trade") {
+        const rj::Value& data_up = result["data"];
+        const rj::Value& data = data_up["data"];
         MarketDataMessage marketDataMessage;
         marketDataMessage.type = MarketDataMessage::Type::MARKET_DATA_EVENTS_TRADE;
         marketDataMessage.recapType = MarketDataMessage::RecapType::NONE;
-        std::string exchangeSubscriptionId = channelId + ":" + symbolId;
-        marketDataMessage.exchangeSubscriptionId = exchangeSubscriptionId;
-        marketDataMessage.tp = now;
+        marketDataMessage.exchangeSubscriptionId = channel;
+        TimePoint ts = TimePoint(std::chrono::milliseconds(std::stoll(data["trade_time"].GetString())));
+        marketDataMessage.tp = ts;
         MarketDataMessage::TypeForDataPoint dataPoint;
-        dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(std::string(x["r"].GetString()))});
-        dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(std::string(x["a"].GetString()))});
-        dataPoint.insert({MarketDataMessage::DataFieldType::TRADE_ID, std::string(x["i"].GetString())});
-        dataPoint.insert({MarketDataMessage::DataFieldType::IS_BUYER_MAKER, std::string(x["t"].GetString()) == "0" ? "1" : "0"});
+        dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(std::string(data["amount_base"].GetString()))});
+        dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(std::string(data["amount_trade"].GetString()))});
+        dataPoint.insert({MarketDataMessage::DataFieldType::TRADE_ID, std::string(data["Id"].GetString())});
+        dataPoint.insert({MarketDataMessage::DataFieldType::IS_BUYER_MAKER, std::string(data["direction"].GetString()) == "1" ? "1" : "0"});
         marketDataMessage.data[MarketDataMessage::DataType::TRADE].emplace_back(std::move(dataPoint));
         marketDataMessageList.emplace_back(std::move(marketDataMessage));
-      }
-    } else if (type == "ping") {
-      ErrorCode ec;
-      this->send(hdl, R"({ "op": "pong" })", wspp::frame::opcode::text, ec);
-      if (ec) {
-        this->onError(Event::Type::SUBSCRIPTION_STATUS, Message::Type::GENERIC_ERROR, ec, "pong");
-      }
-    } else if (type == "subscribe") {
-      event.setType(Event::Type::SUBSCRIPTION_STATUS);
-      std::vector<Message> messageList;
-      Message message;
-      message.setTimeReceived(timeReceived);
-      std::vector<std::string> correlationIdList;
-      if (this->correlationIdListByConnectionIdChannelIdSymbolIdMap.find(wsConnection.id) != this->correlationIdListByConnectionIdChannelIdSymbolIdMap.end()) {
-        int id = std::stoi(document["id"].GetString());
-        if (this->exchangeSubscriptionIdListByExchangeJsonPayloadIdMap.find(id) != this->exchangeSubscriptionIdListByExchangeJsonPayloadIdMap.end()) {
-          for (const auto& exchangeSubscriptionId : this->exchangeSubscriptionIdListByExchangeJsonPayloadIdMap.at(id)) {
-            std::string channelId = this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_CHANNEL_ID];
-            std::string symbolId = this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_SYMBOL_ID];
-            if (this->correlationIdListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id).find(channelId) !=
-                this->correlationIdListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id).end()) {
-              if (this->correlationIdListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id).at(channelId).find(symbolId) !=
-                  this->correlationIdListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id).at(channelId).end()) {
-                std::vector<std::string> correlationIdList_2 =
-                    this->correlationIdListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id).at(channelId).at(symbolId);
-                correlationIdList.insert(correlationIdList.end(), correlationIdList_2.begin(), correlationIdList_2.end());
+      } else if (result.ObjectEmpty()) {
+        event.setType(Event::Type::SUBSCRIPTION_STATUS);
+        std::vector<Message> messageList;
+        Message message;
+        message.setTimeReceived(timeReceived);
+        std::vector<std::string> correlationIdList;
+        if (this->correlationIdListByConnectionIdChannelIdSymbolIdMap.find(wsConnection.id) != this->correlationIdListByConnectionIdChannelIdSymbolIdMap.end()) {
+          int id = std::stoi(document["id"].GetString());
+          if (this->exchangeSubscriptionIdListByExchangeJsonPayloadIdMap.find(id) != this->exchangeSubscriptionIdListByExchangeJsonPayloadIdMap.end()) {
+            for (const auto& exchangeSubscriptionId : this->exchangeSubscriptionIdListByExchangeJsonPayloadIdMap.at(id)) {
+              std::string channelId = this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_CHANNEL_ID];
+              std::string symbolId = this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_SYMBOL_ID];
+              if (this->correlationIdListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id).find(channelId) !=
+                  this->correlationIdListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id).end()) {
+                if (this->correlationIdListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id).at(channelId).find(symbolId) !=
+                    this->correlationIdListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id).at(channelId).end()) {
+                  std::vector<std::string> correlationIdList_2 =
+                      this->correlationIdListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id).at(channelId).at(symbolId);
+                  correlationIdList.insert(correlationIdList.end(), correlationIdList_2.begin(), correlationIdList_2.end());
+                }
               }
             }
           }
         }
+        message.setCorrelationIdList(correlationIdList);
+        message.setType(Message::Type::SUBSCRIPTION_STARTED);
+        Element element;
+        element.insert(CCAPI_INFO_MESSAGE, textMessage);
+        message.setElementList({element});
+        messageList.emplace_back(std::move(message));
+        event.setMessageList(messageList);
       }
-      message.setCorrelationIdList(correlationIdList);
-      message.setType(Message::Type::SUBSCRIPTION_STARTED);
-      Element element;
-      element.insert(CCAPI_INFO_MESSAGE, textMessage);
-      message.setElementList({element});
-      messageList.emplace_back(std::move(message));
-      event.setMessageList(messageList);
-    } else if (type == "error") {
-      // TODO(cryptochassis): implement
+
+// commont ping
+//      if (channelId == "1000") {
+//        ErrorCode ec;
+//        this->send(hdl, R"({ "op": "pong" })", wspp::frame::opcode::text, ec);
+//        if (ec) {
+//          this->onError(Event::Type::SUBSCRIPTION_STATUS, Message::Type::GENERIC_ERROR, ec, "pong");
+//        }
+//      }
+      
     }
   }
   void convertRequestForRest(http::request<http::string_body>& req, const Request& request, const TimePoint& now, const std::string& symbolId,
