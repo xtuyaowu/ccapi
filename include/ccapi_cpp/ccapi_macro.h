@@ -248,7 +248,7 @@
 #define CCAPI_WEBSOCKET_BLOCKCHAIN_CHANNEL_TRADE "trades"
 #define CCAPI_WEBSOCKET_BLOCKCHAIN_CHANNEL_DEPTH "l2"
 #define CCAPI_WEBSOCKET_BITTREX_CHANNEL_TRADE "trade"
-#define CCAPI_WEBSOCKET_BITTREX_CHANNEL_DEPTH "orderbook"
+#define CCAPI_WEBSOCKET_BITTREX_CHANNEL_DEPTH "orderBook"
 #define CCAPI_WEBSOCKET_BITSO_CHANNEL_TRADE "trades"
 #define CCAPI_WEBSOCKET_BITSO_CHANNEL_DEPTH "orders"
 #define CCAPI_WEBSOCKET_OKCOIN_CHANNEL_TRADE "spot/trade"
@@ -718,7 +718,7 @@
 #define CCAPI_BLOCKCHAIN_URL_WS_BASE "wss://ws.blockchain.info/mercury-gateway/v1/ws"
 #endif
 #ifndef CCAPI_BITTREX_URL_WS_BASE
-#define CCAPI_BITTREX_URL_WS_BASE "https://socket-v3.bittrex.com/signalr"
+#define CCAPI_BITTREX_URL_WS_BASE "wss://socket-v3.bittrex.com/signalr/connect?transport=webSockets&connectionToken=Cylqs%2FpYLy30jyG8clRvL7pbKq9v9aajLViUK79A9ta9lipe381bfTzePXtw6tT%2BP1niJCLZSPMRfhYAb0rth9QNaUX8FzR4u7b%2FqKWF002jtPZ2&connectionData=%5B%7B%22name%22%3A%20%22c3%22%7D%5D&clientProtocol=1.5"
 #endif
 #ifndef CCAPI_BITSO_URL_WS_BASE
 #define CCAPI_BITSO_URL_WS_BASE "wss://ws.bitso.com"
