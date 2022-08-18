@@ -16,6 +16,18 @@ using ::ccapi::SessionConfigs;
 using ::ccapi::SessionOptions;
 using ::ccapi::toString;
 using ::ccapi::UtilSystem;
+using ::ccapi::Subscription;
+
+bool stoped = false;
+void signal_handler(int signal)
+{
+  std::cout << "signal_handler:" << signal << std::endl;
+  if (signal == SIGINT || signal == SIGKILL)
+  {
+    stoped = true;
+  }
+}
+
 int main(int argc, char** argv) {
   if (UtilSystem::getEnvAsString("BINANCE_API_KEY").empty()) {
     std::cerr << "Please set environment variable BINANCE_API_KEY" << std::endl;
@@ -104,6 +116,24 @@ int main(int argc, char** argv) {
   }
   std::this_thread::sleep_for(std::chrono::seconds(10));
   session.stop();
+  std::cout << "Bye" << std::endl;
+
+  SessionOptions sessionOptionsUpdate;
+  SessionConfigs sessionConfigsUpdate;
+  MyEventHandler eventHandlerUpdate;
+  Session sessionUpdate(sessionOptionsUpdate, sessionConfigsUpdate, &eventHandlerUpdate);
+  // ORDER_UPDATE
+  Subscription subscriptionUpdate("binance", argv[2], "ORDER_UPDATE");
+  sessionUpdate.subscribe(subscriptionUpdate);
+  while(true)
+  {
+    if (stoped)
+    {
+      break;
+    }
+  }
+  //std::this_thread::sleep_for(std::chrono::seconds(10));
+  sessionUpdate.stop();
   std::cout << "Bye" << std::endl;
   return EXIT_SUCCESS;
 }
