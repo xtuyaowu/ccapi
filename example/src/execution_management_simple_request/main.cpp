@@ -29,6 +29,10 @@ void signal_handler(int signal)
 }
 
 int main(int argc, char** argv) {
+
+  std::signal(SIGINT, signal_handler);
+  std::signal(SIGKILL, signal_handler);
+
   if (UtilSystem::getEnvAsString("BINANCE_API_KEY").empty()) {
     std::cerr << "Please set environment variable BINANCE_API_KEY" << std::endl;
     return EXIT_FAILURE;
@@ -44,6 +48,16 @@ int main(int argc, char** argv) {
     std::cerr << "Please provide the first command line argument from this list: " + toString(modeList) << std::endl;
     return EXIT_FAILURE;
   }
+
+  SessionOptions sessionOptionsUpdate;
+  SessionConfigs sessionConfigsUpdate;
+  MyEventHandler eventHandlerUpdate;
+  Session sessionUpdate(sessionOptionsUpdate, sessionConfigsUpdate, &eventHandlerUpdate);
+  // ORDER_UPDATE
+  Subscription subscriptionUpdate("binance", argv[2], "ORDER_UPDATE");
+  sessionUpdate.subscribe(subscriptionUpdate);
+  std::this_thread::sleep_for(std::chrono::seconds(10));
+
   std::string mode(argv[1]);
   SessionOptions sessionOptions;
   SessionConfigs sessionConfigs;
@@ -63,6 +77,7 @@ int main(int argc, char** argv) {
         {"QUANTITY", argv[4]},
         {"LIMIT_PRICE", argv[5]},
     });
+    std::cout << "place order time: "+ ccapi::UtilTime::getISOTimestamp(ccapi::UtilTime::now()) << std::endl;
     session.sendRequest(request);
   } else if (mode == "cancel_order") {
     if (argc != 4) {
@@ -114,17 +129,7 @@ int main(int argc, char** argv) {
     Request request(Request::Operation::GET_ACCOUNT_BALANCES, "binance");
     session.sendRequest(request);
   }
-  std::this_thread::sleep_for(std::chrono::seconds(10));
-  session.stop();
-  std::cout << "Bye" << std::endl;
 
-  SessionOptions sessionOptionsUpdate;
-  SessionConfigs sessionConfigsUpdate;
-  MyEventHandler eventHandlerUpdate;
-  Session sessionUpdate(sessionOptionsUpdate, sessionConfigsUpdate, &eventHandlerUpdate);
-  // ORDER_UPDATE
-  Subscription subscriptionUpdate("binance", argv[2], "ORDER_UPDATE");
-  sessionUpdate.subscribe(subscriptionUpdate);
   while(true)
   {
     if (stoped)
@@ -133,6 +138,7 @@ int main(int argc, char** argv) {
     }
   }
   //std::this_thread::sleep_for(std::chrono::seconds(10));
+  session.stop();
   sessionUpdate.stop();
   std::cout << "Bye" << std::endl;
   return EXIT_SUCCESS;
