@@ -40,6 +40,16 @@ int main(int argc, char** argv) {
     std::cerr << "Please set environment variable BINANCE_US_API_SECRET" << std::endl;
     return EXIT_FAILURE;
   }
+
+  SessionOptions sessionOptionsUpdate;
+  SessionConfigs sessionConfigsUpdate;
+  MyEventHandler eventHandlerUpdate;
+  Session sessionUpdate(sessionOptionsUpdate, sessionConfigsUpdate, &eventHandlerUpdate);
+  // ORDER_UPDATE
+  Subscription subscriptionUpdate("binance-us", "BTCUSD", "ORDER_UPDATE");
+  sessionUpdate.subscribe(subscriptionUpdate);
+  std::this_thread::sleep_for(std::chrono::seconds(10));
+
   SessionOptions sessionOptions;
   SessionConfigs sessionConfigs;
   MyEventHandler eventHandler;
@@ -55,16 +65,7 @@ int main(int argc, char** argv) {
   });
   session.sendRequest(request);
   std::this_thread::sleep_for(std::chrono::seconds(10));
-  session.stop();
-  std::cout << "Bye" << std::endl;
 
-  SessionOptions sessionOptionsUpdate;
-  SessionConfigs sessionConfigsUpdate;
-  MyEventHandler eventHandlerUpdate;
-  Session sessionUpdate(sessionOptionsUpdate, sessionConfigsUpdate, &eventHandlerUpdate);
-  // ORDER_UPDATE
-  Subscription subscriptionUpdate("binance-us", "BTCUSD", "ORDER_UPDATE");
-  sessionUpdate.subscribe(subscriptionUpdate);
   while(true)
   {
     if (stoped)
@@ -73,6 +74,7 @@ int main(int argc, char** argv) {
     }
   }
   //std::this_thread::sleep_for(std::chrono::seconds(10));
+  session.stop();
   sessionUpdate.stop();
   std::cout << "Bye" << std::endl;
   return EXIT_SUCCESS;
