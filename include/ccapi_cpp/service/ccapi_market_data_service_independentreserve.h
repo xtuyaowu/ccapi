@@ -22,6 +22,16 @@ class MarketDataServiceIndependentreserve : public MarketDataService {
     this->getInstrumentTarget = "/api/pro/v1/products";
     this->getInstrumentsTarget = "/api/pro/v1/products";
   }
+
+  struct OrderBookPoint
+  {
+    std::string guid;
+    std::string price;
+    std::string volume;
+  };
+  std::map<std::string, OrderBookPoint> mapOfBuyOrders;
+  std::map<std::string, OrderBookPoint> mapOfSellOrders;
+
   virtual ~MarketDataServiceIndependentreserve() {}
 #ifndef CCAPI_EXPOSE_INTERNAL
 
@@ -66,7 +76,7 @@ class MarketDataServiceIndependentreserve : public MarketDataService {
     document.Parse<rj::kParseNumbersAsStringsFlag>(textMessage.c_str());
     std::string event_type = document["Event"].GetString();
     auto now = UtilTime::now();
-      if(event_type == "NewOrder" || event_type == "NewOrder" || event_type == "NewOrder") {
+      if(event_type == "NewOrder" || event_type == "OrderChanged" || event_type == "OrderCanceled") {
         std::string exchangeSubscriptionId = document["Channel"].GetString();
         auto channel_split = UtilString::split(exchangeSubscriptionId, "-");
         std::string channelId = channel_split.at(0);
@@ -102,40 +112,146 @@ class MarketDataServiceIndependentreserve : public MarketDataService {
           marketDataMessage.type = MarketDataMessage::Type::MARKET_DATA_EVENTS_MARKET_DEPTH;
           marketDataMessage.recapType = MarketDataMessage::RecapType::SOLICITED;
           marketDataMessage.exchangeSubscriptionId = exchangeSubscriptionId;
-          marketDataMessage.tp = now;
+          marketDataMessage.tp = UtilTime::parse(std::string(orderbook_snapshot["CreatedTimestampUtc"].GetString()));
 
           for (const auto& x : orderbook_snapshot["BuyOrders"].GetArray()) {
             MarketDataMessage::TypeForDataPoint dataPoint;
             dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(x["Price"].GetString())});
             dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(x["Volume"].GetString())});
             marketDataMessage.data[MarketDataMessage::DataType::BID].emplace_back(std::move(dataPoint));
+
+            OrderBookPoint orderBookBid;
+            orderBookBid.guid = x["Guid"].GetString();
+            orderBookBid.price = x["Price"].GetString();
+            orderBookBid.volume = x["Volume"].GetString();
+            mapOfBuyOrders.insert(std::make_pair(x["Guid"].GetString(), orderBookBid));
           }
           for (const auto& x : orderbook_snapshot["SellOrders"].GetArray()) {
             MarketDataMessage::TypeForDataPoint dataPoint;
             dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(x["Price"].GetString())});
             dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(x["Volume"].GetString())});
             marketDataMessage.data[MarketDataMessage::DataType::ASK].emplace_back(std::move(dataPoint));
+
+            OrderBookPoint orderBookAsk;
+            orderBookAsk.guid = x["Guid"].GetString();
+            orderBookAsk.price = x["Price"].GetString();
+            orderBookAsk.volume = x["Volume"].GetString();
+            mapOfSellOrders.insert(std::make_pair(x["Guid"].GetString(), orderBookAsk));
           }
           marketDataMessageList.emplace_back(std::move(marketDataMessage));
         } else {
           if (event_type == "NewOrder") {
               const rj::Value& data = document["Data"];
+              std::string orderType = data["OrderType"].GetString();
               MarketDataMessage marketDataMessage;
               marketDataMessage.type = MarketDataMessage::Type::MARKET_DATA_EVENTS_MARKET_DEPTH;
-              marketDataMessage.recapType = MarketDataMessage::RecapType::SOLICITED;
+              marketDataMessage.recapType = MarketDataMessage::RecapType::NONE;
               marketDataMessage.exchangeSubscriptionId = exchangeSubscriptionId;
               marketDataMessage.tp = now;
-              for (const auto& x : data["bids"].GetArray()) {
+              if (orderType == "LimitBid") {
                 MarketDataMessage::TypeForDataPoint dataPoint;
-                dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(x["r"].GetString())});
-                dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(x["a"].GetString())});
+                dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(data["Price"].GetString())});
+                dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(data["Volume"].GetString())});
                 marketDataMessage.data[MarketDataMessage::DataType::BID].emplace_back(std::move(dataPoint));
-              }
-              for (const auto& x : data["asks"].GetArray()) {
+
+                OrderBookPoint orderBookBid;
+                orderBookBid.guid = data["OrderGuid"].GetString();
+                orderBookBid.price = data["Price"].GetString();
+                orderBookBid.volume = data["Volume"].GetString();
+                mapOfBuyOrders.insert(std::make_pair(data["OrderGuid"].GetString(), orderBookBid));
+              } else if (orderType == "LimitOffer") {
                 MarketDataMessage::TypeForDataPoint dataPoint;
-                dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(x["r"].GetString())});
-                dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(x["a"].GetString())});
+                dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(data["Price"].GetString())});
+                dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(data["Volume"].GetString())});
                 marketDataMessage.data[MarketDataMessage::DataType::ASK].emplace_back(std::move(dataPoint));
+
+                OrderBookPoint orderBookAsk;
+                orderBookAsk.guid = data["OrderGuid"].GetString();
+                orderBookAsk.price = data["Price"].GetString();
+                orderBookAsk.volume = data["Volume"].GetString();
+                mapOfSellOrders.insert(std::make_pair(data["OrderGuid"].GetString(), orderBookAsk));
+              }
+              marketDataMessageList.emplace_back(std::move(marketDataMessage));
+            } else if (event_type == "OrderChanged") {
+              const rj::Value& data = document["Data"];
+              std::string orderType = data["OrderType"].GetString();
+              MarketDataMessage marketDataMessage;
+              marketDataMessage.type = MarketDataMessage::Type::MARKET_DATA_EVENTS_MARKET_DEPTH;
+              marketDataMessage.recapType = MarketDataMessage::RecapType::NONE;
+              marketDataMessage.exchangeSubscriptionId = exchangeSubscriptionId;
+              marketDataMessage.tp = now;
+              if (orderType == "LimitBid") {
+                MarketDataMessage::TypeForDataPoint dataPoint;
+                dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(data["Price"].GetString())});
+                dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(data["Volume"].GetString())});
+                marketDataMessage.data[MarketDataMessage::DataType::BID].emplace_back(std::move(dataPoint));
+
+                if(data["Price"].GetString() == "0"){
+                  mapOfBuyOrders.erase(data["OrderGuid"].GetString());
+                } else {
+                  OrderBookPoint orderBookBid;
+                  orderBookBid.guid = data["OrderGuid"].GetString();
+                  orderBookBid.price = data["Price"].GetString();
+                  orderBookBid.volume = data["Volume"].GetString();
+                  mapOfBuyOrders.insert(std::make_pair(data["OrderGuid"].GetString(), orderBookBid));
+                }
+              } else if (orderType == "LimitOffer") {
+                MarketDataMessage::TypeForDataPoint dataPoint;
+                dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(data["Price"].GetString())});
+                dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString(data["Volume"].GetString())});
+                marketDataMessage.data[MarketDataMessage::DataType::ASK].emplace_back(std::move(dataPoint));
+
+                if(data["Price"].GetString() == "0"){
+                  mapOfSellOrders.erase(data["OrderGuid"].GetString());
+                } else {
+                  OrderBookPoint orderBookAsk;
+                  orderBookAsk.guid = data["OrderGuid"].GetString();
+                  orderBookAsk.price = data["Price"].GetString();
+                  orderBookAsk.volume = data["Volume"].GetString();
+                  mapOfSellOrders.insert(std::make_pair(data["OrderGuid"].GetString(), orderBookAsk));
+                }
+              }
+              marketDataMessageList.emplace_back(std::move(marketDataMessage));
+            } else if (event_type == "OrderCanceled") {
+              const rj::Value& data = document["Data"];
+              std::string orderType = data["OrderType"].GetString();
+              MarketDataMessage marketDataMessage;
+              marketDataMessage.type = MarketDataMessage::Type::MARKET_DATA_EVENTS_MARKET_DEPTH;
+              marketDataMessage.recapType = MarketDataMessage::RecapType::NONE;
+              marketDataMessage.exchangeSubscriptionId = exchangeSubscriptionId;
+              marketDataMessage.tp = now;
+              if (orderType == "LimitBid") {
+                std::map<std::string, OrderBookPoint>::iterator it = mapOfBuyOrders.begin();
+                OrderBookPoint orderBookBid;
+                while(it != mapOfBuyOrders.end())
+                {
+                  if(it->first == data["OrderGuid"].GetString()){
+                    orderBookBid = it->second;
+                    break;
+                  }
+                  it++;
+                }
+                MarketDataMessage::TypeForDataPoint dataPoint;
+                dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(orderBookBid.price)});
+                dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString("0")});
+                marketDataMessage.data[MarketDataMessage::DataType::BID].emplace_back(std::move(dataPoint));
+                mapOfBuyOrders.erase(data["OrderGuid"].GetString());
+              } else if (orderType == "LimitOffer") {
+                std::map<std::string, OrderBookPoint>::iterator it = mapOfSellOrders.begin();
+                OrderBookPoint orderBookAsk;
+                while(it != mapOfSellOrders.end())
+                {
+                  if(it->first == data["OrderGuid"].GetString()){
+                    orderBookAsk = it->second;
+                    break;
+                  }
+                  it++;
+                }
+                MarketDataMessage::TypeForDataPoint dataPoint;
+                dataPoint.insert({MarketDataMessage::DataFieldType::PRICE, UtilString::normalizeDecimalString(orderBookAsk.price)});
+                dataPoint.insert({MarketDataMessage::DataFieldType::SIZE, UtilString::normalizeDecimalString("0")});
+                marketDataMessage.data[MarketDataMessage::DataType::ASK].emplace_back(std::move(dataPoint));
+                mapOfSellOrders.erase(data["OrderGuid"].GetString());
               }
               marketDataMessageList.emplace_back(std::move(marketDataMessage));
             }
