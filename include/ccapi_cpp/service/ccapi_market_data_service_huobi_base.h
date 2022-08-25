@@ -148,11 +148,12 @@ class MarketDataServiceHuobiBase : public MarketDataService {
       } else if (std::regex_search(channelId, std::regex(CCAPI_WEBSOCKET_HUOBI_CHANNEL_MARKET_DEPTH_REGEX))) {
         MarketDataMessage marketDataMessage;
         marketDataMessage.type = MarketDataMessage::Type::MARKET_DATA_EVENTS_MARKET_DEPTH;
-        marketDataMessage.recapType = this->processedInitialSnapshotByConnectionIdChannelIdSymbolIdMap[wsConnection.id][channelId][symbolId]
-                                          ? MarketDataMessage::RecapType::NONE
-                                          : MarketDataMessage::RecapType::SOLICITED;
+//        marketDataMessage.recapType = this->processedInitialSnapshotByConnectionIdChannelIdSymbolIdMap[wsConnection.id][channelId][symbolId]
+//                                          ? MarketDataMessage::RecapType::NONE
+//                                          : MarketDataMessage::RecapType::SOLICITED;
+        marketDataMessage.recapType = MarketDataMessage::RecapType::SOLICITED;
         const rj::Value& tick = document["tick"];
-        std::string ts = tick["ts"].GetString();
+        std::string ts = document["ts"].GetString();
         ts.insert(ts.size() - 3, ".");
         marketDataMessage.tp = UtilTime::makeTimePoint(UtilTime::divide(ts));
         marketDataMessage.exchangeSubscriptionId = exchangeSubscriptionId;
