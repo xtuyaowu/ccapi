@@ -24,9 +24,9 @@ include_guard(DIRECTORY)
 #
  add_compile_definitions(CCAPI_ENABLE_EXCHANGE_COINBASE)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_GEMINI)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_GEMINI)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_KRAKEN)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_KRAKEN)
 #
 # add_compile_definitions(CCAPI_ENABLE_EXCHANGE_KRAKEN_FUTURES)
 #
@@ -54,14 +54,14 @@ include_guard(DIRECTORY)
  add_compile_definitions(CCAPI_ENABLE_EXCHANGE_FTX)
  add_compile_definitions(CCAPI_ENABLE_EXCHANGE_FTX_US)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_DERIBIT)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_DERIBIT)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_GATEIO)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_GATEIO)
 # add_compile_definitions(CCAPI_ENABLE_EXCHANGE_GATEIO_PERPETUAL_FUTURES)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_CRYPTOCOM)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_CRYPTOCOM)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_ASCENDEX)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_ASCENDEX)
 #
  add_compile_definitions(CCAPI_ENABLE_LOG_TRACE)
 

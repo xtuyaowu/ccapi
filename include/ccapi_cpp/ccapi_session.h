@@ -206,9 +206,9 @@
 #ifdef CCAPI_ENABLE_EXCHANGE_FTX_US
 #include "ccapi_cpp/service/ccapi_fix_service_ftx_us.h"
 #endif
-#ifdef CCAPI_ENABLE_EXCHANGE_DERIBIT
-#include "ccapi_cpp/service/ccapi_fix_service_deribit.h"
-#endif
+//#ifdef CCAPI_ENABLE_EXCHANGE_DERIBIT
+//#include "ccapi_cpp/service/ccapi_fix_service_deribit.h"
+//#endif
 #endif
 // end: enable exchanges for FIX
 
@@ -533,10 +533,10 @@ class Session {
     this->serviceByServiceNameExchangeMap[CCAPI_FIX][CCAPI_EXCHANGE_NAME_FTX_US] =
         std::make_shared<FixServiceFtxUs>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
 #endif
-#ifdef CCAPI_ENABLE_EXCHANGE_DERIBIT
-    this->serviceByServiceNameExchangeMap[CCAPI_FIX][CCAPI_EXCHANGE_NAME_DERIBIT] =
-        std::make_shared<FixServiceDeribit>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
-#endif
+//#ifdef CCAPI_ENABLE_EXCHANGE_DERIBIT
+//    this->serviceByServiceNameExchangeMap[CCAPI_FIX][CCAPI_EXCHANGE_NAME_DERIBIT] =
+//        std::make_shared<FixServiceDeribit>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
+//#endif
 #endif
     for (const auto& x : this->serviceByServiceNameExchangeMap) {
       auto serviceName = x.first;
