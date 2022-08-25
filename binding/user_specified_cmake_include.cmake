@@ -4,17 +4,29 @@ include_guard(DIRECTORY)
 #
  add_compile_definitions(CCAPI_ENABLE_SERVICE_EXECUTION_MANAGEMENT)
 #
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_INDODAX)
+#
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_LIQUID)
+#
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_INDEPENDENTRESERVE)
+#
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_EXMO)
+#
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BLOCKCHAIN)
+#
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BITTREX)
+#
  add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BITSO)
 #
  add_compile_definitions(CCAPI_ENABLE_EXCHANGE_OKCOIN)
 #
-# add_compile_definitions(CCAPI_ENABLE_SERVICE_FIX)
+ add_compile_definitions(CCAPI_ENABLE_SERVICE_FIX)
 #
  add_compile_definitions(CCAPI_ENABLE_EXCHANGE_COINBASE)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_GEMINI)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_GEMINI)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_KRAKEN)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_KRAKEN)
 #
 # add_compile_definitions(CCAPI_ENABLE_EXCHANGE_KRAKEN_FUTURES)
 #
@@ -24,8 +36,8 @@ include_guard(DIRECTORY)
 #
 # add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BITMEX)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BINANCE_US)
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BINANCE)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BINANCE_US)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BINANCE)
 # add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BINANCE_USDS_FUTURES)
 # add_compile_definitions(CCAPI_ENABLE_EXCHANGE_BINANCE_COIN_FUTURES)
 #
@@ -37,23 +49,23 @@ include_guard(DIRECTORY)
 #
 # add_compile_definitions(CCAPI_ENABLE_EXCHANGE_ERISX)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_KUCOIN)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_KUCOIN)
+
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_FTX)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_FTX_US)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_FTX)
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_FTX_US)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_DERIBIT)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_DERIBIT)
-#
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_GATEIO)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_GATEIO)
 # add_compile_definitions(CCAPI_ENABLE_EXCHANGE_GATEIO_PERPETUAL_FUTURES)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_CRYPTOCOM)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_CRYPTOCOM)
 #
-# add_compile_definitions(CCAPI_ENABLE_EXCHANGE_ASCENDEX)
+ add_compile_definitions(CCAPI_ENABLE_EXCHANGE_ASCENDEX)
 #
-# add_compile_definitions(CCAPI_ENABLE_LOG_TRACE)
-#
-# add_compile_definitions(CCAPI_ENABLE_LOG_DEBUG)
+ add_compile_definitions(CCAPI_ENABLE_LOG_TRACE)
+
+ add_compile_definitions(CCAPI_ENABLE_LOG_DEBUG)
 #
 # add_compile_definitions(CCAPI_ENABLE_LOG_INFO)
 #

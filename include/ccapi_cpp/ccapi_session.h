@@ -4,6 +4,24 @@
 
 // start: enable exchanges for market data
 #ifdef CCAPI_ENABLE_SERVICE_MARKET_DATA
+#ifdef CCAPI_ENABLE_EXCHANGE_INDODAX
+#include "ccapi_cpp/service/ccapi_market_data_service_indodax.h"
+#endif
+#ifdef CCAPI_ENABLE_EXCHANGE_LIQUID
+#include "ccapi_cpp/service/ccapi_market_data_service_liquid.h"
+#endif
+#ifdef CCAPI_ENABLE_EXCHANGE_INDEPENDENTRESERVE
+#include "ccapi_cpp/service/ccapi_market_data_service_independentreserve.h"
+#endif
+#ifdef CCAPI_ENABLE_EXCHANGE_EXMO
+#include "ccapi_cpp/service/ccapi_market_data_service_exmo.h"
+#endif
+#ifdef CCAPI_ENABLE_EXCHANGE_BLOCKCHAIN
+#include "ccapi_cpp/service/ccapi_market_data_service_blockchain.h"
+#endif
+#ifdef CCAPI_ENABLE_EXCHANGE_BITTREX
+#include "ccapi_cpp/service/ccapi_market_data_service_bittrex.h"
+#endif
 #ifdef CCAPI_ENABLE_EXCHANGE_BITSO
 #include "ccapi_cpp/service/ccapi_market_data_service_bitso.h"
 #endif
@@ -188,9 +206,9 @@
 #ifdef CCAPI_ENABLE_EXCHANGE_FTX_US
 #include "ccapi_cpp/service/ccapi_fix_service_ftx_us.h"
 #endif
-#ifdef CCAPI_ENABLE_EXCHANGE_DERIBIT
-#include "ccapi_cpp/service/ccapi_fix_service_deribit.h"
-#endif
+//#ifdef CCAPI_ENABLE_EXCHANGE_DERIBIT
+//#include "ccapi_cpp/service/ccapi_fix_service_deribit.h"
+//#endif
 #endif
 // end: enable exchanges for FIX
 
@@ -254,6 +272,30 @@ class Session {
     this->t = std::move(t);
     this->internalEventHandler = std::bind(&Session::onEvent, this, std::placeholders::_1, std::placeholders::_2);
 #ifdef CCAPI_ENABLE_SERVICE_MARKET_DATA
+#ifdef CCAPI_ENABLE_EXCHANGE_INDODAX
+    this->serviceByServiceNameExchangeMap[CCAPI_MARKET_DATA][CCAPI_EXCHANGE_NAME_INDODAX] =
+        std::make_shared<MarketDataServiceIndodax>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
+#endif
+#ifdef CCAPI_ENABLE_EXCHANGE_LIQUID
+    this->serviceByServiceNameExchangeMap[CCAPI_MARKET_DATA][CCAPI_EXCHANGE_NAME_LIQUID] =
+        std::make_shared<MarketDataServiceLiquid>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
+#endif
+#ifdef CCAPI_ENABLE_EXCHANGE_INDEPENDENTRESERVE
+    this->serviceByServiceNameExchangeMap[CCAPI_MARKET_DATA][CCAPI_EXCHANGE_NAME_INDEPENDENTRESERVE] =
+        std::make_shared<MarketDataServiceIndependentreserve>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
+#endif
+#ifdef CCAPI_ENABLE_EXCHANGE_EXMO
+    this->serviceByServiceNameExchangeMap[CCAPI_MARKET_DATA][CCAPI_EXCHANGE_NAME_EXMO] =
+        std::make_shared<MarketDataServiceExmo>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
+#endif
+#ifdef CCAPI_ENABLE_EXCHANGE_BLOCKCHAIN
+    this->serviceByServiceNameExchangeMap[CCAPI_MARKET_DATA][CCAPI_EXCHANGE_NAME_BLOCKCHAIN] =
+        std::make_shared<MarketDataServiceBlockchain>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
+#endif
+#ifdef CCAPI_ENABLE_EXCHANGE_BITTREX
+    this->serviceByServiceNameExchangeMap[CCAPI_MARKET_DATA][CCAPI_EXCHANGE_NAME_BITTREX] =
+        std::make_shared<MarketDataServiceBittrex>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
+#endif
 #ifdef CCAPI_ENABLE_EXCHANGE_BITSO
     this->serviceByServiceNameExchangeMap[CCAPI_MARKET_DATA][CCAPI_EXCHANGE_NAME_BITSO] =
         std::make_shared<MarketDataServiceBitso>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
@@ -491,10 +533,10 @@ class Session {
     this->serviceByServiceNameExchangeMap[CCAPI_FIX][CCAPI_EXCHANGE_NAME_FTX_US] =
         std::make_shared<FixServiceFtxUs>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
 #endif
-#ifdef CCAPI_ENABLE_EXCHANGE_DERIBIT
-    this->serviceByServiceNameExchangeMap[CCAPI_FIX][CCAPI_EXCHANGE_NAME_DERIBIT] =
-        std::make_shared<FixServiceDeribit>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
-#endif
+//#ifdef CCAPI_ENABLE_EXCHANGE_DERIBIT
+//    this->serviceByServiceNameExchangeMap[CCAPI_FIX][CCAPI_EXCHANGE_NAME_DERIBIT] =
+//        std::make_shared<FixServiceDeribit>(this->internalEventHandler, sessionOptions, sessionConfigs, this->serviceContextPtr);
+//#endif
 #endif
     for (const auto& x : this->serviceByServiceNameExchangeMap) {
       auto serviceName = x.first;

@@ -45,6 +45,24 @@
 #endif
 #define CCAPI_MARKET_DEPTH_RETURN_UPDATE_DEFAULT "0"
 #define CCAPI_MARKET_DEPTH_RETURN_UPDATE_ENABLE "1"
+#ifndef CCAPI_EXCHANGE_NAME_INDODAX
+#define CCAPI_EXCHANGE_NAME_INDODAX "indodax"
+#endif
+#ifndef CCAPI_EXCHANGE_NAME_LIQUID
+#define CCAPI_EXCHANGE_NAME_LIQUID "liquid"
+#endif
+#ifndef CCAPI_EXCHANGE_NAME_INDEPENDENTRESERVE
+#define CCAPI_EXCHANGE_NAME_INDEPENDENTRESERVE "independentreserve"
+#endif
+#ifndef CCAPI_EXCHANGE_NAME_EXMO
+#define CCAPI_EXCHANGE_NAME_EXMO "exmo"
+#endif
+#ifndef CCAPI_EXCHANGE_NAME_BLOCKCHAIN
+#define CCAPI_EXCHANGE_NAME_BLOCKCHAIN "blockchain"
+#endif
+#ifndef CCAPI_EXCHANGE_NAME_BITTREX
+#define CCAPI_EXCHANGE_NAME_BITTREX "bittrex"
+#endif
 #ifndef CCAPI_EXCHANGE_NAME_BITSO
 #define CCAPI_EXCHANGE_NAME_BITSO "bitso"
 #endif
@@ -219,6 +237,18 @@
 #ifndef CCAPI_ORDER_PRICE_TIMES_QUANTITY_MIN
 #define CCAPI_ORDER_PRICE_TIMES_QUANTITY_MIN "PRICE_TIMES_QUANTITY_MIN"
 #endif
+#define CCAPI_WEBSOCKET_INDODAX_CHANNEL_TRADE "trade"
+#define CCAPI_WEBSOCKET_INDODAX_CHANNEL_DEPTH "depth"
+#define CCAPI_WEBSOCKET_LIQUID_CHANNEL_TRADE "executions_cash"
+#define CCAPI_WEBSOCKET_LIQUID_CHANNEL_DEPTH "price_ladders_cash"
+#define CCAPI_WEBSOCKET_INDEPENDENTRESERVE_CHANNEL_TRADE "ticker"
+#define CCAPI_WEBSOCKET_INDEPENDENTRESERVE_CHANNEL_DEPTH "orderbook"
+#define CCAPI_WEBSOCKET_EXMO_CHANNEL_TRADE "spot/trades"
+#define CCAPI_WEBSOCKET_EXMO_CHANNEL_DEPTH "spot/order_book_snapshots"
+#define CCAPI_WEBSOCKET_BLOCKCHAIN_CHANNEL_TRADE "trades"
+#define CCAPI_WEBSOCKET_BLOCKCHAIN_CHANNEL_DEPTH "l2"
+#define CCAPI_WEBSOCKET_BITTREX_CHANNEL_TRADE "trade"
+#define CCAPI_WEBSOCKET_BITTREX_CHANNEL_DEPTH "orderBook"
 #define CCAPI_WEBSOCKET_BITSO_CHANNEL_TRADE "trades"
 #define CCAPI_WEBSOCKET_BITSO_CHANNEL_DEPTH "orders"
 #define CCAPI_WEBSOCKET_OKCOIN_CHANNEL_TRADE "spot/trade"
@@ -483,6 +513,24 @@
 #endif
 
 // start: exchange REST urls
+#ifndef CCAPI_INDODAX_URL_REST_BASE
+#define CCAPI_INDODAX_URL_REST_BASE "https://btcapi.net"
+#endif
+#ifndef CCAPI_LIQUID_URL_REST_BASE
+#define CCAPI_LIQUID_URL_REST_BASE "https://api.liquid.com"
+#endif
+#ifndef CCAPI_INDEPENDENTRESERVE_URL_REST_BASE
+#define CCAPI_INDEPENDENTRESERVE_URL_REST_BASE "https://api.independentreserve.com"
+#endif
+#ifndef CCAPI_EXMO_URL_REST_BASE
+#define CCAPI_EXMO_URL_REST_BASE "https://api.exmo.com/v1.1"
+#endif
+#ifndef CCAPI_BLOCKCHAIN_URL_REST_BASE
+#define CCAPI_BLOCKCHAIN_URL_REST_BASE "https://api.blockchain.com/exchange"
+#endif
+#ifndef CCAPI_BITTREX_URL_REST_BASE
+#define CCAPI_BITTREX_URL_REST_BASE "https://api.bittrex.com/v3"
+#endif
 #ifndef CCAPI_BITSO_URL_REST_BASE
 #define CCAPI_BITSO_URL_REST_BASE "https://api.bitso.com/v3"
 #endif
@@ -654,6 +702,24 @@
 // end: exchange REST urls
 
 // start: exchange WS urls
+#ifndef CCAPI_INDODAX_URL_WS_BASE
+#define CCAPI_INDODAX_URL_WS_BASE "wss://ws.indodax.com/ws/"
+#endif
+#ifndef CCAPI_LIQUID_URL_WS_BASE
+#define CCAPI_LIQUID_URL_WS_BASE "wss://tap.liquid.com/app/LiquidTapClient/"
+#endif
+#ifndef CCAPI_INDEPENDENTRESERVE_URL_WS_BASE
+#define CCAPI_INDEPENDENTRESERVE_URL_WS_BASE "wss://websockets.independentreserve.com"
+#endif
+#ifndef CCAPI_EXMO_URL_WS_BASE
+#define CCAPI_EXMO_URL_WS_BASE "wss://ws-api.exmo.com:443/v1/public"
+#endif
+#ifndef CCAPI_BLOCKCHAIN_URL_WS_BASE
+#define CCAPI_BLOCKCHAIN_URL_WS_BASE "wss://ws.blockchain.info/mercury-gateway/v1/ws"
+#endif
+#ifndef CCAPI_BITTREX_URL_WS_BASE
+#define CCAPI_BITTREX_URL_WS_BASE "wss://socket-v3.bittrex.com/signalr/connect?transport=webSockets&connectionToken=Cylqs%2FpYLy30jyG8clRvL7pbKq9v9aajLViUK79A9ta9lipe381bfTzePXtw6tT%2BP1niJCLZSPMRfhYAb0rth9QNaUX8FzR4u7b%2FqKWF002jtPZ2&connectionData=%5B%7B%22name%22%3A%20%22c3%22%7D%5D&clientProtocol=1.5"
+#endif
 #ifndef CCAPI_BITSO_URL_WS_BASE
 #define CCAPI_BITSO_URL_WS_BASE "wss://ws.bitso.com"
 #endif
