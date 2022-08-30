@@ -14,7 +14,7 @@
 #define RAPIDJSON_PARSE_ERROR_NORETURN(parseErrorCode, offset) throw std::runtime_error(#parseErrorCode)
 #endif
 #include <regex>
-
+#include "zlib.h"
 #include "boost/asio/strand.hpp"
 #include "boost/beast/core.hpp"
 #include "boost/beast/http.hpp"
@@ -34,7 +34,8 @@
 #include "websocketpp/config/asio_client.hpp"
 // clang-format on
 #if defined(CCAPI_ENABLE_SERVICE_MARKET_DATA) && (defined(CCAPI_ENABLE_EXCHANGE_HUOBI) || defined(CCAPI_ENABLE_EXCHANGE_HUOBI_USDT_SWAP) || \
-                                                  defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_OKEX)) || \
+                                                  defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_OKEX) || \
+                                                  defined(CCAPI_ENABLE_EXCHANGE_OKCOIN) ) || \
     defined(CCAPI_ENABLE_SERVICE_EXECUTION_MANAGEMENT) && (defined(CCAPI_ENABLE_EXCHANGE_HUOBI_USDT_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP))
 #include <iomanip>
 #include <sstream>
@@ -957,7 +958,7 @@ class Service : public std::enable_shared_from_this<Service> {
       }
     } else if (opcode == websocketpp::frame::opcode::binary) {
 #if defined(CCAPI_ENABLE_SERVICE_MARKET_DATA) && (defined(CCAPI_ENABLE_EXCHANGE_HUOBI) || defined(CCAPI_ENABLE_EXCHANGE_HUOBI_USDT_SWAP) || \
-                                                  defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_OKEX)) || \
+                                                  defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_OKEX) ) || \
     defined(CCAPI_ENABLE_SERVICE_EXECUTION_MANAGEMENT) && (defined(CCAPI_ENABLE_EXCHANGE_HUOBI_USDT_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP))
       if (this->needDecompressWebsocketMessage) {
         std::string decompressed;
@@ -984,8 +985,121 @@ class Service : public std::enable_shared_from_this<Service> {
         }
       }
 #endif
+
+#if defined(CCAPI_ENABLE_EXCHANGE_OKCOIN)
+      if (this->needDecompressWebsocketMessage) {
+        const std::string& payload = msg->get_payload();
+        char *buf = (char*)malloc(payload.size() * 10);
+        try {
+          // ErrorCode ec = this->inflater.decompress(reinterpret_cast<const uint8_t*>(&payload[0]), payload.size(), decompressed);
+          int dstLen = payload.size() * 10;
+          int ec = this->gzdecompress((&payload[0]),
+                                    payload.size(),
+                                    buf, dstLen);
+          std::string decompressed(buf);
+          free(buf);
+          if (ec != Z_OK) {
+            CCAPI_LOGGER_FATAL("[error]: decompressed failed" + std::to_string(ec));
+          }
+          CCAPI_LOGGER_DEBUG("decompressed = " + decompressed);
+          this->onTextMessage(hdl, decompressed, now);
+        } catch (const std::exception& e) {
+          std::stringstream ss;
+          ss << std::hex << std::setfill('0');
+          for (int i = 0; i < payload.size(); ++i) {
+            ss << std::setw(2) << static_cast<unsigned>(reinterpret_cast<const uint8_t*>(&payload[0])[i]);
+          }
+          CCAPI_LOGGER_ERROR("binaryMessage = " + ss.str());
+          this->onError(Event::Type::SUBSCRIPTION_STATUS, Message::Type::GENERIC_ERROR, e);
+        }
+        ErrorCode ec = this->inflater.inflate_reset();
+        if (ec) {
+          this->onError(Event::Type::SUBSCRIPTION_STATUS, Message::Type::GENERIC_ERROR, ec, "decompress");
+        }
+      }
+#endif
     }
   }
+
+ int gzDecompress(const char *src, int srcLen, const char *dst, int &dstLen){
+   z_stream strm;
+   strm.zalloc=NULL;
+   strm.zfree=NULL;
+   strm.opaque=NULL;
+   strm.avail_in = srcLen;
+   strm.avail_out = dstLen;
+   strm.next_in = (Bytef *)src;
+   strm.next_out = (Bytef *)dst;
+   int err=-1, ret=-1;
+   err = inflateInit2(&strm, MAX_WBITS+16);
+   if (err == Z_OK){
+     err = inflate(&strm, Z_FINISH);
+     if (err == Z_STREAM_END){
+       dstLen = strm.total_out;
+       inflateEnd(&strm);
+       return dstLen;
+     }
+     else{
+       inflateEnd(&strm);
+       return err;
+     }
+   }
+   else{
+     inflateEnd(&strm);
+     return err;
+   }
+   inflateEnd(&strm);
+   return err;
+ }
+
+ // okcoin
+ int gzdecompress(const char *zdata, long nzdata, const char *data, int &ndata)
+ {
+   int err = 0;
+   z_stream d_stream = {0}; /* decompression stream */
+   static char dummy_head[2] = {
+       0x8 + 0x7 * 0x10,
+       (((0x8 + 0x7 * 0x10) * 0x100 + 30) / 31 * 31) & 0xFF,
+   };
+   d_stream.zalloc = NULL;
+   d_stream.zfree = NULL;
+   d_stream.opaque = NULL;
+   d_stream.next_in = (Bytef *)zdata;
+   d_stream.avail_in = 0;
+   d_stream.next_out = (Bytef *)data;
+   if (inflateInit2(&d_stream, -MAX_WBITS) != Z_OK)
+   {
+     return -1;
+   }
+   // if(inflateInit2(&d_stream, 47) != Z_OK) return -1;
+   while (d_stream.total_out < ndata && d_stream.total_in < nzdata)
+   {
+     d_stream.avail_in = d_stream.avail_out = 1; /* force small buffers */
+     if ((err = inflate(&d_stream, Z_NO_FLUSH)) == Z_STREAM_END)
+       break;
+     if (err != Z_OK)
+     {
+       if (err == Z_DATA_ERROR)
+       {
+         d_stream.next_in = (Bytef *)dummy_head;
+         d_stream.avail_in = sizeof(dummy_head);
+         if ((err = inflate(&d_stream, Z_NO_FLUSH)) != Z_OK)
+         {
+           return -1;
+         }
+       }
+       else
+       {
+         return -1;
+       }
+     }
+   }
+   if (inflateEnd(&d_stream) != Z_OK)
+     return -1;
+   ndata = d_stream.total_out;
+   return 0;
+ }
+
   void onPong(wspp::connection_hdl hdl, std::string payload) {
     auto now = UtilTime::now();
     this->onPongByMethod(PingPongMethod::WEBSOCKET_PROTOCOL_LEVEL, hdl, payload, now);
@@ -1125,7 +1239,8 @@ class Service : public std::enable_shared_from_this<Service> {
   // std::string convertNumberToStringInJsonRewrite{"$1\"$2\""};
   bool needDecompressWebsocketMessage{};
 #if defined(CCAPI_ENABLE_SERVICE_MARKET_DATA) && (defined(CCAPI_ENABLE_EXCHANGE_HUOBI) || defined(CCAPI_ENABLE_EXCHANGE_HUOBI_USDT_SWAP) || \
-                                                  defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_OKEX)) || \
+                                                  defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_OKEX) || \
+                                                  defined(CCAPI_ENABLE_EXCHANGE_OKCOIN) ) || \
     defined(CCAPI_ENABLE_SERVICE_EXECUTION_MANAGEMENT) && (defined(CCAPI_ENABLE_EXCHANGE_HUOBI_USDT_SWAP) || defined(CCAPI_ENABLE_EXCHANGE_HUOBI_COIN_SWAP))
   struct monostate {};
   websocketpp::extensions_workaround::permessage_deflate::enabled<monostate> inflater;

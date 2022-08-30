@@ -33,6 +33,38 @@ class SessionConfigs CCAPI_FINAL {
  private:
 #endif
   void updateExchange() {
+    std::map<std::string, std::string> fieldWebsocketChannelMapIndodax = {
+        {CCAPI_TRADE, CCAPI_WEBSOCKET_INDODAX_CHANNEL_TRADE},
+        {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_INDODAX_CHANNEL_DEPTH},
+    };
+    std::map<std::string, std::string> fieldWebsocketChannelMapLiquid = {
+        {CCAPI_TRADE, CCAPI_WEBSOCKET_LIQUID_CHANNEL_TRADE},
+        {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_LIQUID_CHANNEL_DEPTH},
+    };
+    std::map<std::string, std::string> fieldWebsocketChannelMapIndependentreserve = {
+        {CCAPI_TRADE, CCAPI_WEBSOCKET_INDEPENDENTRESERVE_CHANNEL_TRADE},
+        {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_INDEPENDENTRESERVE_CHANNEL_DEPTH},
+    };
+    std::map<std::string, std::string> fieldWebsocketChannelMapExmo = {
+        {CCAPI_TRADE, CCAPI_WEBSOCKET_EXMO_CHANNEL_TRADE},
+        {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_EXMO_CHANNEL_DEPTH},
+    };
+    std::map<std::string, std::string> fieldWebsocketChannelMapBlockchain = {
+        {CCAPI_TRADE, CCAPI_WEBSOCKET_BLOCKCHAIN_CHANNEL_TRADE},
+        {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_BLOCKCHAIN_CHANNEL_DEPTH},
+    };
+    std::map<std::string, std::string> fieldWebsocketChannelMapBittrex = {
+        {CCAPI_TRADE, CCAPI_WEBSOCKET_BITTREX_CHANNEL_TRADE},
+        {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_BITTREX_CHANNEL_DEPTH},
+    };
+    std::map<std::string, std::string> fieldWebsocketChannelMapBitso = {
+        {CCAPI_TRADE, CCAPI_WEBSOCKET_BITSO_CHANNEL_TRADE},
+        {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_BITSO_CHANNEL_DEPTH},
+    };
+    std::map<std::string, std::string> fieldWebsocketChannelMapOkcoin = {
+        {CCAPI_TRADE, CCAPI_WEBSOCKET_OKCOIN_CHANNEL_TRADE},
+        {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_OKCOIN_CHANNEL_DEPTH},
+    };
     std::map<std::string, std::string> fieldWebsocketChannelMapCoinbase = {
         {CCAPI_TRADE, CCAPI_WEBSOCKET_COINBASE_CHANNEL_MATCH},
         {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_COINBASE_CHANNEL_LEVEL2},
@@ -139,6 +171,30 @@ class SessionConfigs CCAPI_FINAL {
         {CCAPI_TRADE, CCAPI_WEBSOCKET_ASCENDEX_CHANNEL_TRADES},
         {CCAPI_MARKET_DEPTH, CCAPI_WEBSOCKET_ASCENDEX_CHANNEL_DEPTH},
     };
+    for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapIndodax) {
+      this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_INDODAX].push_back(fieldWebsocketChannel.first);
+    }
+    for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapLiquid) {
+      this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_LIQUID].push_back(fieldWebsocketChannel.first);
+    }
+    for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapIndependentreserve) {
+      this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_INDEPENDENTRESERVE].push_back(fieldWebsocketChannel.first);
+    }
+    for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapExmo) {
+      this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_EXMO].push_back(fieldWebsocketChannel.first);
+    }
+    for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapBlockchain) {
+      this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_BLOCKCHAIN].push_back(fieldWebsocketChannel.first);
+    }
+    for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapBittrex) {
+      this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_BITTREX].push_back(fieldWebsocketChannel.first);
+    }
+    for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapBitso) {
+      this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_BITSO].push_back(fieldWebsocketChannel.first);
+    }
+    for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapOkcoin) {
+      this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_OKCOIN].push_back(fieldWebsocketChannel.first);
+    }
     for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapCoinbase) {
       this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_COINBASE].push_back(fieldWebsocketChannel.first);
     }
@@ -222,6 +278,14 @@ class SessionConfigs CCAPI_FINAL {
     }
     CCAPI_LOGGER_TRACE("this->exchangeFieldMap = " + toString(this->exchangeFieldMap));
     this->exchangeFieldWebsocketChannelMap = {
+        {CCAPI_EXCHANGE_NAME_INDODAX, fieldWebsocketChannelMapIndodax},
+        {CCAPI_EXCHANGE_NAME_LIQUID, fieldWebsocketChannelMapLiquid},
+        {CCAPI_EXCHANGE_NAME_INDEPENDENTRESERVE, fieldWebsocketChannelMapIndependentreserve},
+        {CCAPI_EXCHANGE_NAME_EXMO, fieldWebsocketChannelMapExmo},
+        {CCAPI_EXCHANGE_NAME_BLOCKCHAIN, fieldWebsocketChannelMapBlockchain},
+        {CCAPI_EXCHANGE_NAME_BITTREX, fieldWebsocketChannelMapBittrex},
+        {CCAPI_EXCHANGE_NAME_BITSO, fieldWebsocketChannelMapBitso},
+        {CCAPI_EXCHANGE_NAME_OKCOIN, fieldWebsocketChannelMapOkcoin},
         {CCAPI_EXCHANGE_NAME_COINBASE, fieldWebsocketChannelMapCoinbase},
         {CCAPI_EXCHANGE_NAME_GEMINI, fieldWebsocketChannelMapGemini},
         {CCAPI_EXCHANGE_NAME_KRAKEN, fieldWebsocketChannelMapKraken},
@@ -250,6 +314,14 @@ class SessionConfigs CCAPI_FINAL {
         {CCAPI_EXCHANGE_NAME_ASCENDEX, fieldWebsocketChannelMapAscendex},
     };
     this->urlWebsocketBase = {
+        {CCAPI_EXCHANGE_NAME_INDODAX, CCAPI_INDODAX_URL_WS_BASE},
+        {CCAPI_EXCHANGE_NAME_LIQUID, CCAPI_LIQUID_URL_WS_BASE},
+        {CCAPI_EXCHANGE_NAME_INDEPENDENTRESERVE, CCAPI_INDEPENDENTRESERVE_URL_WS_BASE},
+        {CCAPI_EXCHANGE_NAME_EXMO, CCAPI_EXMO_URL_WS_BASE},
+        {CCAPI_EXCHANGE_NAME_BLOCKCHAIN, CCAPI_BLOCKCHAIN_URL_WS_BASE},
+        {CCAPI_EXCHANGE_NAME_BITTREX, CCAPI_BITTREX_URL_WS_BASE},
+        {CCAPI_EXCHANGE_NAME_BITSO, CCAPI_BITSO_URL_WS_BASE},
+        {CCAPI_EXCHANGE_NAME_OKCOIN, CCAPI_OKCOIN_URL_WS_BASE},
         {CCAPI_EXCHANGE_NAME_COINBASE, CCAPI_COINBASE_URL_WS_BASE},
         {CCAPI_EXCHANGE_NAME_GEMINI, CCAPI_GEMINI_URL_WS_BASE},
         {CCAPI_EXCHANGE_NAME_KRAKEN, CCAPI_KRAKEN_URL_WS_BASE},
@@ -284,6 +356,14 @@ class SessionConfigs CCAPI_FINAL {
   }
   void updateExchangeRest() {
     this->urlRestBase = {
+        {CCAPI_EXCHANGE_NAME_INDODAX, CCAPI_INDODAX_URL_REST_BASE},
+        {CCAPI_EXCHANGE_NAME_LIQUID, CCAPI_LIQUID_URL_REST_BASE},
+        {CCAPI_EXCHANGE_NAME_INDEPENDENTRESERVE, CCAPI_INDEPENDENTRESERVE_URL_REST_BASE},
+        {CCAPI_EXCHANGE_NAME_EXMO, CCAPI_EXMO_URL_REST_BASE},
+        {CCAPI_EXCHANGE_NAME_BLOCKCHAIN, CCAPI_BLOCKCHAIN_URL_REST_BASE},
+        {CCAPI_EXCHANGE_NAME_BITTREX, CCAPI_BITTREX_URL_REST_BASE},
+        {CCAPI_EXCHANGE_NAME_BITSO, CCAPI_BITSO_URL_REST_BASE},
+        {CCAPI_EXCHANGE_NAME_OKCOIN, CCAPI_OKCOIN_URL_REST_BASE},
         {CCAPI_EXCHANGE_NAME_COINBASE, CCAPI_COINBASE_URL_REST_BASE},
         {CCAPI_EXCHANGE_NAME_GEMINI, CCAPI_GEMINI_URL_REST_BASE},
         {CCAPI_EXCHANGE_NAME_KRAKEN, CCAPI_KRAKEN_URL_REST_BASE},

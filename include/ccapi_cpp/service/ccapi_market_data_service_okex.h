@@ -40,9 +40,11 @@ class MarketDataServiceOkex : public MarketDataService {
     if (field == CCAPI_MARKET_DEPTH) {
       if (conflateIntervalMilliSeconds < 100) {
         if (marketDepthRequested <= 50) {
-          channelId = CCAPI_WEBSOCKET_OKEX_CHANNEL_PUBLIC_DEPTH50_L2_TBT;
+          // channelId = CCAPI_WEBSOCKET_OKEX_CHANNEL_PUBLIC_DEPTH50_L2_TBT;
+          channelId = CCAPI_WEBSOCKET_OKEX_CHANNEL_PUBLIC_DEPTH400;
         } else {
-          channelId = CCAPI_WEBSOCKET_OKEX_CHANNEL_PUBLIC_DEPTH400_L2_TBT;
+          // channelId = CCAPI_WEBSOCKET_OKEX_CHANNEL_PUBLIC_DEPTH400_L2_TBT;
+          channelId = CCAPI_WEBSOCKET_OKEX_CHANNEL_PUBLIC_DEPTH400;
         }
       } else {
         if (marketDepthRequested <= 5) {
