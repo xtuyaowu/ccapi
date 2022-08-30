@@ -35,8 +35,14 @@ class MarketDataServiceBittrex : public MarketDataService {
   void pingOnApplicationLevel(wspp::connection_hdl hdl, ErrorCode& ec) override { this->send(hdl, R"({"H":"c3","M":"Subscribe","A":[["heartbeat"]],"I":1})", wspp::frame::opcode::text, ec); }
   std::vector<std::string> createSendStringList(const WsConnection& wsConnection) override {
     std::vector<std::string> sendStringList;
+    rj::Document document;
+    document.SetObject();
+    rj::Document::AllocatorType& allocator = document.GetAllocator();
+    document.AddMember("H", rj::Value("c3").Move(), allocator);
+    document.AddMember("M", rj::Value("Subscribe").Move(), allocator);
     for (const auto& subscriptionListByChannelIdSymbolId : this->subscriptionListByConnectionIdChannelIdSymbolIdMap.at(wsConnection.id)) {
       auto channelId = subscriptionListByChannelIdSymbolId.first;
+      rj::Value data(rj::kArrayType);
       for (const auto& subscriptionListBySymbolId : subscriptionListByChannelIdSymbolId.second) {
         std::string symbolId = subscriptionListBySymbolId.first;
         std::string exchangeSubscriptionId = channelId + ":" + symbolId;
@@ -44,13 +50,22 @@ class MarketDataServiceBittrex : public MarketDataService {
         this->channelIdSymbolIdByConnectionIdExchangeSubscriptionIdMap[wsConnection.id][exchangeSubscriptionId][CCAPI_SYMBOL_ID] = symbolId;
         std::string sendString;
         if(channelId == "orderBook"){
-          sendString = "{\"H\":\"c3\",\"M\":\"Subscribe\",\"A\":[[\"orderbook_"+symbolId+"_25\"]],\"I\":1}";
+          std::string orderbook_sub = "orderbook_"+symbolId+"_25";
+          data.PushBack(rj::Value(orderbook_sub.c_str(), allocator).Move(), allocator);
         } else if(channelId == "trade"){
-          sendString = "{\"H\":\"c3\",\"M\":\"Subscribe\",\"A\":[[\"trade_"+symbolId+"\"]],\"I\":1}";
+          std::string trade_sub = "trade_"+symbolId;
+          data.PushBack(rj::Value(trade_sub.c_str(), allocator).Move(), allocator);
         }
-        sendStringList.push_back(sendString);
       }
+      rj::Value A(rj::kArrayType);
+      A.PushBack(data, allocator);;
+      document.AddMember("A", A, allocator);
     }
+    rj::StringBuffer stringBuffer;
+    rj::Writer<rj::StringBuffer> writer(stringBuffer);
+    document.Accept(writer);
+    std::string sendString = stringBuffer.GetString();
+    sendStringList.push_back(sendString);
     return sendStringList;
   }
   void processTextMessage(WsConnection& wsConnection, wspp::connection_hdl hdl, const std::string& textMessage, const TimePoint& timeReceived, Event& event,
