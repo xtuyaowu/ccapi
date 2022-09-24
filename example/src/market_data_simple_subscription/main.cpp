@@ -46,12 +46,12 @@ int main(int argc, char** argv) {
 
   std::vector<Subscription> subscription;
   // 1、orderbook
-   Subscription subscription1("gemini", "BTCUSD", "MARKET_DEPTH", "MARKET_DEPTH_MAX=20","BTCUSD|orderbook");
-   Subscription subscription2("gemini", "ETHUSD", "MARKET_DEPTH", "MARKET_DEPTH_MAX=20","ETHUSD|orderbook");
+   Subscription subscription1("gateio-perpetual-futures", "ETH_USDT", "MARKET_DEPTH", "MARKET_DEPTH_MAX=20","ETH_USDT|orderbook");
+   Subscription subscription2("gateio-perpetual-futures", "BTC_USDT", "MARKET_DEPTH", "MARKET_DEPTH_MAX=20","BTC_USDT|orderbook");
 
    // 2、trade
-   Subscription subscription3("gemini", "BTCUSD", "TRADE","", "BTCUSD|trade");
-   Subscription subscription4("gemini", "ETHUSD", "TRADE", "","ETHUSD|trade");
+   Subscription subscription3("gateio-perpetual-futures", "ETH_USDT", "TRADE","", "ETH_USDT|trade");
+   Subscription subscription4("gateio-perpetual-futures", "BTC_USDT", "TRADE", "","BTC_USDT|trade");
 
    // 3、kline
    // Subscription subscription("coinbase", "BTC-USD", "TRADE", "CONFLATE_INTERVAL_MILLISECONDS=300&CONFLATE_GRACE_PERIOD_MILLISECONDS=0");
