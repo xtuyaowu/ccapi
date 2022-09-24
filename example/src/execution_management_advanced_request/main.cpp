@@ -32,12 +32,12 @@ int main(int argc, char** argv) {
   std::signal(SIGINT, signal_handler);
   std::signal(SIGKILL, signal_handler);
 
-  if (UtilSystem::getEnvAsString("BINANCE_US_API_KEY").empty()) {
-    std::cerr << "Please set environment variable BINANCE_US_API_KEY" << std::endl;
+  if (UtilSystem::getEnvAsString("BINANCE_API_KEY").empty()) {
+    std::cerr << "Please set environment variable BINANCE_API_KEY" << std::endl;
     return EXIT_FAILURE;
   }
-  if (UtilSystem::getEnvAsString("BINANCE_US_API_SECRET").empty()) {
-    std::cerr << "Please set environment variable BINANCE_US_API_SECRET" << std::endl;
+  if (UtilSystem::getEnvAsString("BINANCE_API_SECRET").empty()) {
+    std::cerr << "Please set environment variable BINANCE_API_SECRET" << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
   MyEventHandler eventHandlerUpdate;
   Session sessionUpdate(sessionOptionsUpdate, sessionConfigsUpdate, &eventHandlerUpdate);
   // ORDER_UPDATE
-  Subscription subscriptionUpdate("binance-us", "BTCUSD", "ORDER_UPDATE");
+  Subscription subscriptionUpdate("binance", "BTCUSDT", "ORDER_UPDATE");
   sessionUpdate.subscribe(subscriptionUpdate);
   std::this_thread::sleep_for(std::chrono::seconds(10));
 
