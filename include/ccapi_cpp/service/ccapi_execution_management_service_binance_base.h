@@ -403,6 +403,61 @@ class ExecutionManagementServiceBinanceBase : public ExecutionManagementService 
           messageList.emplace_back(std::move(message));
         }
       }
+    } else if (type == (this->isDerivatives ? "ACCOUNT_UPDATE" : "outboundAccountPosition")) {
+        event.setType(Event::Type::SUBSCRIPTION_DATA);
+        if (fieldSet.find(CCAPI_EM_BALANCE_UPDATE) != fieldSet.end()) {
+          Message message;
+          message.setTimeReceived(timeReceived);
+          message.setCorrelationIdList({subscription.getCorrelationId()});
+          message.setTime(TimePoint(std::chrono::milliseconds(std::stoll(document["E"].GetString())))); //Event Time
+          message.setType(Message::Type::EXECUTION_MANAGEMENT_EVENTS_BALANCE_UPDATE);
+          std::vector<Element> elementList;
+          const rj::Value& b = document["B"]; //Balances Array
+          for (const auto& x : b.GetArray()) {
+            Element element;
+            std::string instrument = x["a"].GetString();
+            element.insert(CCAPI_EM_ASSET_FREE, std::string(x["f"].GetString()));
+            element.insert(CCAPI_EM_ASSET_LOCKED, std::string(x["l"].GetString()));
+            element.insert(CCAPI_INSTRUMENT, instrument);
+            elementList.emplace_back(std::move(element));
+          }
+          message.setElementList(elementList);
+          messageList.emplace_back(std::move(message));
+        }
+        if (fieldSet.find(CCAPI_EM_BALANCE_POSITION_UPDATE) != fieldSet.end()) {
+          Message message;
+          message.setTimeReceived(timeReceived);
+          message.setCorrelationIdList({subscription.getCorrelationId()});
+          message.setTime(TimePoint(std::chrono::milliseconds(std::stoll(document["E"].GetString())))); //Event Time
+          message.setType(Message::Type::EXECUTION_MANAGEMENT_EVENTS_BALANCE_POSITION_UPDATE);
+          std::vector<Element> elementList;
+          const rj::Value& b = document["B"]; //Balances Array
+          for (const auto& x : b.GetArray()) {
+            Element element;
+            std::string instrument = x["a"].GetString();
+            element.insert("wb", std::string(x["wb"].GetString())); // Wallet Balance
+            element.insert("cw", std::string(x["cw"].GetString())); // Cross Wallet Balance
+            element.insert("bc", std::string(x["bc"].GetString())); // Balance Change except PnL and Commission
+            element.insert(CCAPI_INSTRUMENT, instrument);
+            elementList.emplace_back(std::move(element));
+          }
+          const rj::Value& p = document["P"]; //Balances Array
+          for (const auto& x : p.GetArray()) {
+            Element element;
+            std::string instrument = x["s"].GetString();
+            element.insert("pa", std::string(x["pa"].GetString())); // Position Amount
+            element.insert("ep", std::string(x["ep"].GetString())); // Entry Price
+            element.insert("cr", std::string(x["cr"].GetString())); // (Pre-fee) Accumulated Realized
+            element.insert("up", std::string(x["up"].GetString())); // Unrealized PnL
+            element.insert("mt", std::string(x["mt"].GetString())); // Margin Type
+            element.insert("iw", std::string(x["iw"].GetString())); // Isolated Wallet (if isolated position)
+            element.insert("ps", std::string(x["ps"].GetString())); // Position Side
+            element.insert(CCAPI_INSTRUMENT, instrument);
+            elementList.emplace_back(std::move(element));
+          }
+          message.setElementList(elementList);
+          messageList.emplace_back(std::move(message));
+        }
     }
     event.setMessageList(messageList);
     return event;
