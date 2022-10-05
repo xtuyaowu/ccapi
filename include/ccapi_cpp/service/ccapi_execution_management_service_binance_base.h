@@ -431,8 +431,9 @@ class ExecutionManagementServiceBinanceBase : public ExecutionManagementService 
           message.setTime(TimePoint(std::chrono::milliseconds(std::stoll(document["E"].GetString())))); //Event Time
           message.setType(Message::Type::EXECUTION_MANAGEMENT_EVENTS_BALANCE_POSITION_UPDATE);
           std::vector<Element> elementList;
-          const rj::Value& b = document["B"]; //Balances Array
-          for (const auto& x : b.GetArray()) {
+          const rj::Value& a = document["a"]; //Balances Array
+          const rj::Value& B = a["B"];
+          for (const auto& x : B.GetArray()) {
             Element element;
             std::string instrument = x["a"].GetString();
             element.insert("wb", std::string(x["wb"].GetString())); // Wallet Balance
@@ -441,7 +442,7 @@ class ExecutionManagementServiceBinanceBase : public ExecutionManagementService 
             element.insert(CCAPI_INSTRUMENT, instrument);
             elementList.emplace_back(std::move(element));
           }
-          const rj::Value& p = document["P"]; //Balances Array
+          const rj::Value& p = a["P"]; //Balances Array
           for (const auto& x : p.GetArray()) {
             Element element;
             std::string instrument = x["s"].GetString();
