@@ -452,7 +452,7 @@ class ExecutionManagementServiceBinanceBase : public ExecutionManagementService 
             element.insert(CCAPI_EM_POSITION_UNREALIZED_PNL, std::string(x["up"].GetString())); // Unrealized PnL
             element.insert(CCAPI_EM_POSITION_MARGIN_TYPE, std::string(x["mt"].GetString())); // Margin Type
             element.insert(CCAPI_EM_POSITION_ISOLATED_WALLET, std::string(x["iw"].GetString())); // Isolated Wallet (if isolated position)
-            element.insert(CCAPI_EM_POSITION_POSITION_SIDE, std::string(x["ps"].GetString())); // Position Side
+            element.insert(CCAPI_EM_POSITION_SIDE, std::string(x["ps"].GetString())); // Position Side
             element.insert(CCAPI_INSTRUMENT, instrument);
             elementList.emplace_back(std::move(element));
           }
