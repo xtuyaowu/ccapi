@@ -436,23 +436,23 @@ class ExecutionManagementServiceBinanceBase : public ExecutionManagementService 
           for (const auto& x : B.GetArray()) {
             Element element;
             std::string instrument = x["a"].GetString();
-            element.insert("wb", std::string(x["wb"].GetString())); // Wallet Balance
-            element.insert("cw", std::string(x["cw"].GetString())); // Cross Wallet Balance
-            element.insert("bc", std::string(x["bc"].GetString())); // Balance Change except PnL and Commission
+            element.insert(CCAPI_EM_ASSET_WALLET_BALANCE, std::string(x["wb"].GetString())); // Wallet Balance
+            element.insert(CCAPI_EM_ASSET_CROESS_WALLET_BALANCE, std::string(x["cw"].GetString())); // Cross Wallet Balance
+            element.insert(CCAPI_EM_ASSET_BALANCE_CHANGE_EXCEPT_PNL_COMMISSION, std::string(x["bc"].GetString())); // Balance Change except PnL and Commission
             element.insert(CCAPI_INSTRUMENT, instrument);
             elementList.emplace_back(std::move(element));
           }
-          const rj::Value& p = a["P"]; //Balances Array
+          const rj::Value& p = a["P"]; //Positions Array
           for (const auto& x : p.GetArray()) {
             Element element;
             std::string instrument = x["s"].GetString();
-            element.insert("pa", std::string(x["pa"].GetString())); // Position Amount
-            element.insert("ep", std::string(x["ep"].GetString())); // Entry Price
-            element.insert("cr", std::string(x["cr"].GetString())); // (Pre-fee) Accumulated Realized
-            element.insert("up", std::string(x["up"].GetString())); // Unrealized PnL
-            element.insert("mt", std::string(x["mt"].GetString())); // Margin Type
-            element.insert("iw", std::string(x["iw"].GetString())); // Isolated Wallet (if isolated position)
-            element.insert("ps", std::string(x["ps"].GetString())); // Position Side
+            element.insert(CCAPI_EM_POSITION_AMOUNT, std::string(x["pa"].GetString())); // Position Amount
+            element.insert(CCAPI_EM_POSITION_ENTRY_PRICE, std::string(x["ep"].GetString())); // Entry Price
+            element.insert(CCAPI_EM_POSITION_ACCUMULATED_REALIZED, std::string(x["cr"].GetString())); // (Pre-fee) Accumulated Realized
+            element.insert(CCAPI_EM_POSITION_UNREALIZED_PNL, std::string(x["up"].GetString())); // Unrealized PnL
+            element.insert(CCAPI_EM_POSITION_MARGIN_TYPE, std::string(x["mt"].GetString())); // Margin Type
+            element.insert(CCAPI_EM_POSITION_ISOLATED_WALLET, std::string(x["iw"].GetString())); // Isolated Wallet (if isolated position)
+            element.insert(CCAPI_EM_POSITION_POSITION_SIDE, std::string(x["ps"].GetString())); // Position Side
             element.insert(CCAPI_INSTRUMENT, instrument);
             elementList.emplace_back(std::move(element));
           }
