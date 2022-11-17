@@ -10,7 +10,7 @@ class MarketDataServiceCryptocom : public MarketDataService {
                              std::shared_ptr<ServiceContext> serviceContextPtr)
       : MarketDataService(eventHandler, sessionOptions, sessionConfigs, serviceContextPtr) {
     this->exchangeName = CCAPI_EXCHANGE_NAME_CRYPTOCOM;
-    this->baseUrl = sessionConfigs.getUrlWebsocketBase().at(this->exchangeName) + "/v2/market";
+    this->baseUrl = sessionConfigs.getUrlWebsocketBase().at(this->exchangeName) + "/exchange/v1/market";
     this->baseUrlRest = sessionConfigs.getUrlRestBase().at(this->exchangeName);
     this->setHostRestFromUrlRest(this->baseUrlRest);
     try {
@@ -18,9 +18,9 @@ class MarketDataServiceCryptocom : public MarketDataService {
     } catch (const std::exception& e) {
       CCAPI_LOGGER_FATAL(std::string("e.what() = ") + e.what());
     }
-    this->getRecentTradesTarget = "/v2/public/get-trades";
-    this->getInstrumentTarget = "/v2/public/get-instruments";
-    this->getInstrumentsTarget = "/v2/public/get-instruments";
+    this->getRecentTradesTarget = "/exchange/v1/get-trades";
+    this->getInstrumentTarget = "/exchange/v1/get-instruments";
+    this->getInstrumentsTarget = "/exchange/v1/get-instruments";
   }
   virtual ~MarketDataServiceCryptocom() {}
 #ifndef CCAPI_EXPOSE_INTERNAL
@@ -32,7 +32,7 @@ class MarketDataServiceCryptocom : public MarketDataService {
     auto marketDepthRequested = std::stoi(optionMap.at(CCAPI_MARKET_DEPTH_MAX));
     if (field == CCAPI_MARKET_DEPTH) {
       int marketDepthSubscribedToExchange = 1;
-      marketDepthSubscribedToExchange = this->calculateMarketDepthSubscribedToExchange(marketDepthRequested, std::vector<int>({10, 150}));
+      marketDepthSubscribedToExchange = this->calculateMarketDepthSubscribedToExchange(marketDepthRequested, std::vector<int>({10, 50}));
       channelId = CCAPI_WEBSOCKET_CRYPTOCOM_CHANNEL_BOOK;
       this->marketDepthSubscribedToExchangeByConnectionIdChannelIdSymbolIdMap[wsConnection.id][channelId][symbolId] = marketDepthSubscribedToExchange;
     }

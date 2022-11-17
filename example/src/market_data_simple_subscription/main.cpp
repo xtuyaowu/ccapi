@@ -46,22 +46,22 @@ int main(int argc, char** argv) {
 
   std::vector<Subscription> subscription;
   // 1、orderbook
-   Subscription subscription1("gateio-perpetual-futures", "ETH_USDT", "MARKET_DEPTH", "MARKET_DEPTH_MAX=20","ETH_USDT|orderbook");
-   Subscription subscription2("gateio-perpetual-futures", "BTC_USDT", "MARKET_DEPTH", "MARKET_DEPTH_MAX=20","BTC_USDT|orderbook");
+  Subscription subscription1("crypto", "ETH_USDT", "MARKET_DEPTH", "MARKET_DEPTH_MAX=20","ETH_USDT|orderbook");
+  //   Subscription subscription2("crypto", "BTC_USDT", "MARKET_DEPTH", "MARKET_DEPTH_MAX=20","BTC_USDT|orderbook");
 
    // 2、trade
-   Subscription subscription3("gateio-perpetual-futures", "ETH_USDT", "TRADE","", "ETH_USDT|trade");
-   Subscription subscription4("gateio-perpetual-futures", "BTC_USDT", "TRADE", "","BTC_USDT|trade");
+  Subscription subscription3("crypto", "ETH_USDT", "TRADE","", "ETH_USDT|trade");
+  //   Subscription subscription4("crypto", "BTC_USDT", "TRADE", "","BTC_USDT|trade");
 
    // 3、kline
    // Subscription subscription("coinbase", "BTC-USD", "TRADE", "CONFLATE_INTERVAL_MILLISECONDS=300&CONFLATE_GRACE_PERIOD_MILLISECONDS=0");
 
    subscription.push_back(subscription1);
-   subscription.push_back(subscription2);
-   subscription.push_back(subscription3);
-   subscription.push_back(subscription4);
+//   subscription.push_back(subscription2);
+//   subscription.push_back(subscription3);
+//   subscription.push_back(subscription4);
 
-  session.subscribe(subscription);
+  session.subscribe(subscription1);
   while(true)
   {
     if (stoped)
